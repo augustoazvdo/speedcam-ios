@@ -34,8 +34,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-032 Tests: `RecordingWriter` with `SyntheticFrameSource` + silent audio writes a playable .mov: video track 1080p ~30 fps, audio track present when enabled, A/V offset ≤ 100 ms, orientation transform, overlay on frames; mid-recording finish produces playable file. · US-04, US-06, US-08 · AC-031, AC-032, AC-052, AC-072, AC-073
 - [x] T-033 Implement `SyntheticFrameSource` (DEBUG) and `RecordingWriter` (fragment interval). · US-04, US-10 · AC-031, AC-032, AC-090
 - [x] T-034 Implement `CameraFrameSource`, `AudioSource`, `CaptureSessionService` (sessionQueue, interruptions). Device-only manual check. · US-02, US-04 · AC-010, AC-031
-- [ ] T-035 Tests: `ClipRecovery` recovers playable partial file on launch / reports unrecoverable. · US-08 · AC-077
-- [ ] T-036 Implement `ClipStore` + `ClipRecovery`. · US-08 · AC-077
+- [x] T-035 Tests: `ClipRecovery` recovers playable partial file on launch / reports unrecoverable. · US-08 · AC-077
+- [x] T-036 Implement `ClipStore` + `ClipRecovery`. · US-08 · AC-077
 
 ## Phase 4 — Save & permissions
 - [ ] T-040 Tests: `PhotoLibrarySaver` flow with fake: success → toast + temp deleted; denied → kept pending, retried on activation. · US-07, US-01 · AC-006, AC-060, AC-062
