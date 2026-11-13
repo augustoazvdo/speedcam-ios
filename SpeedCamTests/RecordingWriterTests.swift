@@ -39,7 +39,7 @@ final class RecordingWriterTests: XCTestCase {
             if audio {
                 while audioTime <= pts + CMTime(seconds: 1.0 / 30, preferredTimescale: 600) {
                     while !writer.isReadyForAudio { usleep(500) }
-                    _ = writer.appendAudio(SilentAudioSource.silence(at: audioTime, frames: 1024))
+                    _ = writer.appendAudio(SilentAudioSource.silence(at: audioTime, frames: 1024)!)
                     audioTime = audioTime + CMTime(value: 1024, timescale: 44_100)
                 }
             }
