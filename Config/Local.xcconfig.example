@@ -1,0 +1,2 @@
+// Copy to Config/Local.xcconfig (git-ignored) and fill in your own team to run on a device.
+DEVELOPMENT_TEAM =

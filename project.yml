@@ -1,0 +1,103 @@
+name: SpeedCam
+options:
+  bundleIdPrefix: com.augusto
+  deploymentTarget:
+    iOS: "17.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+configs:
+  Debug: debug
+  Release: release
+configFiles:
+  Debug: Config/Shared.xcconfig
+  Release: Config/Shared.xcconfig
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    TARGETED_DEVICE_FAMILY: "1"
+    CODE_SIGN_STYLE: Automatic
+targets:
+  SpeedCam:
+    type: application
+    platform: iOS
+    sources:
+      - path: SpeedCam
+    info:
+      path: SpeedCam/App/Info.plist
+      properties:
+        CFBundleDisplayName: SpeedCam
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        CFBundleDevelopmentRegion: en
+        CFBundleLocalizations: [en, pt-BR]
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIRequiredDeviceCapabilities: [arm64]
+        # English defaults; translations live in SpeedCam/Resources/InfoPlist.xcstrings (R-12, R-17).
+        NSCameraUsageDescription: "SpeedCam uses the camera to record dashcam video of the road with your speed burned into the footage."
+        NSMicrophoneUsageDescription: "SpeedCam uses the microphone to record sound with your dashcam clips. You can still record without audio."
+        NSLocationWhenInUseUsageDescription: "SpeedCam uses your location only while the app is open, to measure your driving speed and show it on the video. Your location is never stored or shared."
+        NSPhotoLibraryAddUsageDescription: "SpeedCam saves finished clips to your Photos library. It can only add videos and cannot see your other photos."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.augusto.speedcam
+        PRODUCT_NAME: SpeedCam
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: SpeedCam/App/Info.plist
+  SpeedCamTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SpeedCamTests
+    dependencies:
+      - target: SpeedCam
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.augusto.speedcam.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/SpeedCam.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SpeedCam"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+  SpeedCamUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: SpeedCamUITests
+    dependencies:
+      - target: SpeedCam
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.augusto.speedcam.uitests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: SpeedCam
+schemes:
+  SpeedCam:
+    build:
+      targets:
+        SpeedCam: all
+        SpeedCamTests: [test]
+        SpeedCamUITests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - SpeedCamTests
+        - SpeedCamUITests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release
