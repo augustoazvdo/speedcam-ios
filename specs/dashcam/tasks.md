@@ -13,14 +13,14 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-006 Add `Localizable.xcstrings` and `InfoPlist.xcstrings` (en + pt-BR) with the four usage strings; wire into `project.yml`. · US-13 · AC-131
 
 ## Phase 1 — Speed logic (unit tests first)
-- [ ] T-010 Tests: `SpeedSmoother` invalid −1 → "--"; stale > 3 s → "--"/noFix; poor accuracy → "--"/weak; < 2 km/h → "0"; smoothing bound; rounding; 13.89 m/s → 50 km/h / 31 mph. · US-05, US-09 · AC-040–AC-045
-- [ ] T-011 Implement `SpeedSmoother` + `SpeedReading`. · US-05 · AC-040–AC-045
-- [ ] T-012 Tests: `SettingsStore` default km/h, persists mph across instances. · US-09 · AC-080, AC-081
-- [ ] T-013 Implement `SettingsStore`. · US-09 · AC-080, AC-081
-- [ ] T-016 Tests: `SettingsStore.overlayCorner` default bottom-left, persists across instances. · US-12 · AC-120, AC-123
-- [ ] T-017 Implement `overlayCorner` in `SettingsStore`. · US-12 · AC-120, AC-123
-- [ ] T-014 Tests: `SimulatedLocationProvider` scenarios deterministic. · US-10 · AC-091
-- [ ] T-015 Implement `SimulatedLocationProvider` (DEBUG) and `CoreLocationProvider` (When In Use, foreground only). · US-05, US-10, US-11 · AC-091, AC-092, AC-102
+- [x] T-010 Tests: `SpeedSmoother` invalid −1 → "--"; stale > 3 s → "--"/noFix; poor accuracy → "--"/weak; < 2 km/h → "0"; smoothing bound; rounding; 13.89 m/s → 50 km/h / 31 mph. · US-05, US-09 · AC-040–AC-045
+- [x] T-011 Implement `SpeedSmoother` + `SpeedReading`. · US-05 · AC-040–AC-045
+- [x] T-012 Tests: `SettingsStore` default km/h, persists mph across instances. · US-09 · AC-080, AC-081
+- [x] T-013 Implement `SettingsStore`. · US-09 · AC-080, AC-081
+- [x] T-016 Tests: `SettingsStore.overlayCorner` default bottom-left, persists across instances. · US-12 · AC-120, AC-123
+- [x] T-017 Implement `overlayCorner` in `SettingsStore`. · US-12 · AC-120, AC-123
+- [x] T-014 Tests: `SimulatedLocationProvider` scenarios deterministic. · US-10 · AC-091
+- [x] T-015 Implement `SimulatedLocationProvider` (DEBUG) and `CoreLocationProvider` (When In Use, foreground only). · US-05, US-10, US-11 · AC-091, AC-092, AC-102
 
 ## Phase 2 — Overlay
 - [ ] T-020 Tests: `OverlayRenderer` renders into a known pixel buffer; overlay region has non-background pixels; "--" state; mph/km/h labels; each orientation places overlay upright in the expected corner; timestamp format. · US-04, US-06 · AC-030, AC-034, AC-050

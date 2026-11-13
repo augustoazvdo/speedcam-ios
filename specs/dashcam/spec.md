@@ -156,6 +156,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **ASM-011** Storage thresholds: 500 MB to start, 200 MB to auto-stop.
 - **ASM-012** With add-only Photos access the app cannot read assets back, so the thumbnail is generated from the local file before deletion and is kept as a small JPEG in the sandbox; tapping it opens the Photos app (`photos-redirect://`), not the specific asset.
 - **ASM-013** Overlay corner is locked at record start like orientation; changing it during recording applies from the next recording (preview shows the pending change with a hint).
+- **ASM-014** (added during implementation) In AC-042, a "valid location update" means any CoreLocation update with a fix (`horizontalAccuracy` ≥ 0), whatever its speed validity. A stream of fixes with invalid speed or poor accuracy therefore shows "--" with "weak" (AC-040/AC-041), and "no fix" is shown only when no fix at all has arrived for more than 3 s. Both cases show "--", so no speed value is ever fabricated (R-08). The EMA restarts after any invalid, inaccurate or stale sample.
 
 ## 5. Questions (all resolved 2026-11-13 by Augusto)
 
