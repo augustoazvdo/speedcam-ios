@@ -7,17 +7,17 @@ struct CameraScreen: View {
     var body: some View {
         GeometryReader { geometry in
             let landscape = geometry.size.width > geometry.size.height
+            // The camera area never sits under the controls, so the burned-in plate stays fully visible (ASM-017).
             ZStack {
                 Color.black.ignoresSafeArea()
-                cameraArea
                 if landscape {
                     HStack(spacing: 0) {
-                        statusStack.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        cameraArea
                         ControlsView(viewModel: viewModel, vertical: true)
                     }
                 } else {
                     VStack(spacing: 0) {
-                        statusStack.frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                        cameraArea
                         ControlsView(viewModel: viewModel, vertical: false)
                     }
                 }
@@ -37,8 +37,16 @@ struct CameraScreen: View {
         }
     }
 
-    @ViewBuilder
     private var cameraArea: some View {
+        ZStack(alignment: .top) {
+            cameraContent
+            statusStack
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    @ViewBuilder
+    private var cameraContent: some View {
         switch viewModel.cameraState {
         case .ready:
             LivePreview(viewModel: viewModel)

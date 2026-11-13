@@ -48,6 +48,24 @@ final class OrientationUITests: XCTestCase {
         }
     }
 
+    // AC-011 / ASM-017: the controls never cover the preview, so the plate is fully visible in every orientation.
+    func test_AC011_previewNotCoveredByControls() {
+        let app = UIArgs.launch()
+        for orientation in [UIDeviceOrientation.portrait, .landscapeLeft, .landscapeRight] {
+            XCUIDevice.shared.orientation = orientation
+            sleep(1)
+            let preview = app.waitFor("preview").frame
+            for id in controlIDs {
+                let control = app.element(id).frame
+                XCTAssertFalse(preview.intersects(control.insetBy(dx: 1, dy: 1)), "\(orientation.rawValue): \(id) \(control) covers preview \(preview)")
+            }
+            let shot = XCTAttachment(screenshot: app.screenshot())
+            shot.name = "preview-\(orientation.rawValue)"
+            shot.lifetime = .keepAlways
+            add(shot)
+        }
+    }
+
     // AC-052: rotating mid-recording rotates the UI but not the file; the lock is released after stop.
     func test_AC052_orientationLockedAtRecordStart() {
         let app = UIArgs.launch()

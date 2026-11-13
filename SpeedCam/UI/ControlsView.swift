@@ -33,7 +33,7 @@ struct ControlsView: View {
                 .padding(.horizontal, 8)
             }
         }
-        .background(.black.opacity(0.35))
+        .background(Color.black)
     }
 }
 
