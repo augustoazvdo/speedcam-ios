@@ -38,8 +38,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-036 Implement `ClipStore` + `ClipRecovery`. · US-08 · AC-077
 
 ## Phase 4 — Save & permissions
-- [ ] T-040 Tests: `PhotoLibrarySaver` flow with fake: success → toast + temp deleted; denied → kept pending, retried on activation. · US-07, US-01 · AC-006, AC-060, AC-062
-- [ ] T-041 Implement `PhotoLibrarySaver` (`.addOnly`) + pending queue. · US-07 · AC-006, AC-060, AC-062 (thumbnail JPEG generated before deleting the sandbox copy, ASM-012)
+- [x] T-040 Tests: `PhotoLibrarySaver` flow with fake: success → toast + temp deleted; denied → kept pending, retried on activation. · US-07, US-01 · AC-006, AC-060, AC-062
+- [x] T-041 Implement `PhotoLibrarySaver` (`.addOnly`) + pending queue. · US-07 · AC-006, AC-060, AC-062 (thumbnail JPEG generated before deleting the sandbox copy, ASM-012)
 - [ ] T-042 Tests: `PermissionsService` + view model: onboarding before prompts, request order, no Always/full access, denied states per permission, refresh on becoming active. · US-01 · AC-001–AC-007
 - [ ] T-043 Implement `PermissionsService` (openSettings deep link). · US-01 · AC-001–AC-007
 
