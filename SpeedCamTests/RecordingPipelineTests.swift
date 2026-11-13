@@ -72,7 +72,8 @@ final class RecordingPipelineTests: XCTestCase {
         try await Task.sleep(for: .seconds(1))
         box.update(reading: SpeedReading(value: 31, unit: .mph, gps: .good))
         try await Task.sleep(for: .seconds(1))
-        XCTAssertEqual(await pipeline.finishRecording(), .finished(url))
+        let result = await pipeline.finishRecording()
+        XCTAssertEqual(result, .finished(url))
         let early = try TestImages.recognizedText(try await frame(at: 0.4)).joined(separator: " ")
         let late = try TestImages.recognizedText(try await frame(at: 1.6)).joined(separator: " ")
         XCTAssertTrue(early.contains("km/h"), early)
@@ -128,7 +129,8 @@ final class RecordingPipelineTests: XCTestCase {
     // AC-023: stop immediately after start leaves no empty file.
     func test_AC023_immediateStopProducesNoFile() async throws {
         try pipeline.beginRecording(to: url, orientation: .landscapeRight, corner: .bottomLeft, includeAudio: false)
-        XCTAssertEqual(await pipeline.finishRecording(), .empty)
+        let result = await pipeline.finishRecording()
+        XCTAssertEqual(result, .empty)
         XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
     }
 }
