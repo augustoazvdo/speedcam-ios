@@ -23,10 +23,10 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-015 Implement `SimulatedLocationProvider` (DEBUG) and `CoreLocationProvider` (When In Use, foreground only). · US-05, US-10, US-11 · AC-091, AC-092, AC-102
 
 ## Phase 2 — Overlay
-- [ ] T-020 Tests: `OverlayRenderer` renders into a known pixel buffer; overlay region has non-background pixels; "--" state; mph/km/h labels; each orientation places overlay upright in the expected corner; timestamp format. · US-04, US-06 · AC-030, AC-034, AC-050
-- [ ] T-021 Implement `OverlayModel` + `OverlayRenderer` (cached CIImage, Metal CIContext). · US-04 · AC-030, AC-034, AC-050
-- [ ] T-022 Tests: renderer places overlay in each of the 4 corners for portrait, landscape-left, landscape-right (12 cases, pixel-region asserts); pt-BR date format. · US-12, US-13 · AC-122, AC-133
-- [ ] T-023 Implement corner + locale support in `OverlayRenderer`. · US-12, US-13 · AC-122, AC-133
+- [x] T-020 Tests: `OverlayRenderer` renders into a known pixel buffer; overlay region has non-background pixels; "--" state; mph/km/h labels; each orientation places overlay upright in the expected corner; timestamp format. · US-04, US-06 · AC-030, AC-034, AC-050
+- [x] T-021 Implement `OverlayModel` + `OverlayRenderer` (cached CIImage, Metal CIContext). · US-04 · AC-030, AC-034, AC-050
+- [x] T-022 Tests: renderer places overlay in each of the 4 corners for portrait, landscape-left, landscape-right (12 cases, pixel-region asserts); pt-BR date format. · US-12, US-13 · AC-122, AC-133
+- [x] T-023 Implement corner + locale support in `OverlayRenderer`. · US-12, US-13 · AC-122, AC-133
 
 ## Phase 3 — Recording pipeline
 - [ ] T-030 Tests: `RecordingCoordinator` state machine (start/stop, debounce, every stop reason finalizes, storage start threshold, thermal serious warn / critical stop, interruption, background, camera revoke stop, location revoke continue). Fakes for all monitors. · US-03, US-08 · AC-020, AC-021, AC-023, AC-070–AC-076, AC-078
