@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 enum UIArgs {
     static let base = ["-SpeedCamSyntheticCamera", "YES", "-SpeedCamSkipOnboarding", "YES",
                        "-SpeedCamFakePhotos", "success", "-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
@@ -20,6 +21,7 @@ enum UIArgs {
     }
 }
 
+@MainActor
 extension XCUIApplication {
     func element(_ id: String) -> XCUIElement {
         descendants(matching: .any).matching(identifier: id).firstMatch
@@ -37,6 +39,7 @@ extension XCUIApplication {
     }
 }
 
+@MainActor
 extension XCTestCase {
     func waitUntil(timeout: TimeInterval = 5, _ condition: () -> Bool) -> Bool {
         let deadline = Date().addingTimeInterval(timeout)

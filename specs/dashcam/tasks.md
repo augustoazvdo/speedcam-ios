@@ -44,8 +44,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-043 Implement `PermissionsService` (openSettings deep link). · US-01 · AC-001–AC-007
 
 ## Phase 5 — UI
-- [ ] T-050 UI tests (launch args: synthetic camera, simulated location, skip onboarding): idle screen controls + "No clips yet"; tap record → red dot + timer; stop → "Saving…" → "✓ Saved to Photos"; thumbnail opens clip; unit toggle live; denied/no-GPS states each show one action. · US-02, US-03, US-07, US-09 · AC-011, AC-012, AC-020, AC-021, AC-061, AC-082, AC-110–AC-113
-- [ ] T-051 Implement `CameraViewModel`, `CameraScreen`, `PreviewView`, `ControlsView`, `StatusViews`, `Toast`, `OnboardingView`, haptics. · US-01–US-03, US-07, US-09 · same
+- [x] T-050 UI tests (launch args: synthetic camera, simulated location, skip onboarding): idle screen controls + "No clips yet"; tap record → red dot + timer; stop → "Saving…" → "✓ Saved to Photos"; thumbnail opens clip; unit toggle live; denied/no-GPS states each show one action. · US-02, US-03, US-07, US-09 · AC-011, AC-012, AC-020, AC-021, AC-061, AC-082, AC-110–AC-113
+- [x] T-051 Implement `CameraViewModel`, `CameraScreen`, `PreviewView`, `ControlsView`, `StatusViews`, `Toast`, `OnboardingView`, haptics. · US-01–US-03, US-07, US-09 · same
 - [ ] T-052 UI test: idle timer disabled while recording, restored after (via exposed debug state). · US-03 · AC-022
 - [ ] T-053 Implement `IdleTimerController`. · US-03 · AC-022
 - [ ] T-054 UI tests in portrait + landscape left/right: controls same order/style, no mid-clip rotation of file. · US-06 · AC-051, AC-052, AC-112

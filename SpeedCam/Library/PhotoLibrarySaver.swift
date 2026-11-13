@@ -29,7 +29,7 @@ struct PhotoLibrarySaver: PhotoLibrarySaving {
 struct FakePhotoLibrarySaver: PhotoLibrarySaving {
     let error: PhotoSaveError?
     func save(videoAt url: URL) async throws(PhotoSaveError) {
-        try? await Task.sleep(for: .milliseconds(300))
+        try? await Task.sleep(for: .seconds(1.5))
         if let error { throw error }
     }
 }

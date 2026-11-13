@@ -23,6 +23,12 @@ final class LaunchArgumentsTests: XCTestCase {
         XCTAssertNil(LaunchArguments(arguments: ["app", "-SpeedCamSimulatedLocation", "bogus"], isSimulator: true).simulatedLocation)
     }
 
+    // AC-093: a later argument overrides an earlier one (UI tests extend a base argument list).
+    func test_AC093_laterArgumentWins() {
+        let args = LaunchArguments(arguments: ["app", "-SpeedCamFakePhotos", "success", "-SpeedCamFakePhotos", "denied"], isSimulator: true)
+        XCTAssertEqual(args.fakePhotos, .some(.denied))
+    }
+
     // AC-093
     func test_AC093_autoRecordAndExportParsed() {
         let args = LaunchArguments(arguments: ["app", "-SpeedCamAutoRecordSeconds", "5",

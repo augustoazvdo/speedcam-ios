@@ -17,7 +17,7 @@ struct LaunchArguments: Sendable {
 
     init(arguments: [String] = ProcessInfo.processInfo.arguments, isSimulator: Bool = LaunchArguments.runningInSimulator) {
         func value(_ key: String) -> String? {
-            guard let index = arguments.firstIndex(of: "-\(key)"), index + 1 < arguments.count else { return nil }
+            guard let index = arguments.lastIndex(of: "-\(key)"), index + 1 < arguments.count else { return nil }
             return arguments[index + 1]
         }
         func flag(_ key: String) -> Bool? {

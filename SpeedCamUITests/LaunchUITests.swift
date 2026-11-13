@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class LaunchUITests: XCTestCase {
     // AC-001
     func test_AC001_appLaunches() {

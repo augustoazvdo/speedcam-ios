@@ -1,5 +1,6 @@
 import XCTest
 
+@MainActor
 final class CameraScreenUITests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false

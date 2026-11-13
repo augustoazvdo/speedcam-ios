@@ -37,16 +37,17 @@ final class SimulatedLocationProvider: LocationProvider {
 
     var onSample: ((LocationSample) -> Void)?
     var onAuthorizationChange: ((LocationAuthorization) -> Void)?
-    var authorization: LocationAuthorization { .authorized }
+    let authorization: LocationAuthorization
     var isRunning: Bool { task != nil }
 
-    init(scenario: SimulatedLocationScenario, interval: TimeInterval = 1) {
+    init(scenario: SimulatedLocationScenario, interval: TimeInterval = 1, authorization: LocationAuthorization = .authorized) {
         self.scenario = scenario
         self.interval = interval
+        self.authorization = authorization
     }
 
     func start() {
-        guard task == nil else { return }
+        guard task == nil, authorization == .authorized else { return }
         let start = Date()
         task = Task { [weak self, scenario, interval] in
             var tick = 0
