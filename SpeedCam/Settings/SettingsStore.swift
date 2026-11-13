@@ -6,6 +6,8 @@ enum OverlayCorner: String, Sendable, CaseIterable, Codable {
     case topRight
     case bottomLeft
     case bottomRight
+
+    static let `default`: OverlayCorner = .bottomLeft
 }
 
 /// Persisted user settings (US-09, US-12).
@@ -35,14 +37,14 @@ final class SettingsStore {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         unit = defaults.string(forKey: Key.unit).flatMap(SpeedUnit.init(rawValue:)) ?? .kmh
-        overlayCorner = defaults.string(forKey: Key.corner).flatMap(OverlayCorner.init(rawValue:)) ?? .bottomLeft
+        overlayCorner = defaults.string(forKey: Key.corner).flatMap(OverlayCorner.init(rawValue:)) ?? .default
         onboardingCompleted = defaults.bool(forKey: Key.onboarding)
     }
 
     func reset() {
         for key in [Key.unit, Key.corner, Key.onboarding] { defaults.removeObject(forKey: key) }
         unit = .kmh
-        overlayCorner = .bottomLeft
+        overlayCorner = .default
         onboardingCompleted = false
     }
 }
