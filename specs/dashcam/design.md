@@ -1,6 +1,6 @@
 # SpeedCam — Design
 
-Spec: [spec.md](spec.md). Status: Draft.
+Spec: [spec.md](spec.md). Status: Approved.
 
 ## 1. Stack
 
@@ -15,6 +15,7 @@ Spec: [spec.md](spec.md). Status: Draft.
 project.yml
 SpeedCam/
   App/            SpeedCamApp.swift, AppEnvironment.swift (composition root), Info.plist
+  Resources/      Localizable.xcstrings, InfoPlist.xcstrings (en + pt-BR)
   Capture/        CaptureSessionService, FrameSource, CameraFrameSource, AudioSource
   Location/       LocationProvider, CoreLocationProvider, SpeedSmoother, SpeedReading
   Overlay/        OverlayModel, OverlayRenderer
@@ -44,17 +45,17 @@ specs/dashcam/
 | `CoreLocationProvider` | `CLLocationManager`, When In Use, `BestForNavigation`, `activityType = .automotiveNavigation`. Started only while app is foreground. Works with `xcrun simctl location`. | implements `LocationProvider` |
 | `SimulatedLocationProvider` (DEBUG) | Deterministic scenarios: `constant50kmh`, `accelerate`, `invalid`, `noFix`, `weak`. | implements `LocationProvider` |
 | `SpeedSmoother` | Pure value logic: validity filtering, EMA smoothing, stationary clamp, staleness, unit conversion → `SpeedReading { display: String /* "50" or "--" */, unit, gps: .good/.weak/.noFix/.off }`. Injected clock. | `ingest(sample)`, `reading(at:)` |
-| `OverlayModel` | Snapshot `{ reading, unit, date, orientation }` read by renderer; thread-safe (lock or actor-isolated copy). | value type |
+| `OverlayModel` | Snapshot `{ reading, unit, date, orientation, corner }` read by renderer; thread-safe (lock or actor-isolated copy). | value type |
 | `OverlayRenderer` | Draws the overlay into a `CIImage` (cached per distinct text/state) and composites onto the frame; same renderer also produces the live preview image so preview == file (AC-011). Handles orientation so overlay is upright in the output. | `render(pixelBuffer, model) -> CVPixelBuffer` |
 | `RecordingWriter` | `AVAssetWriter` (.mov), video input (HEVC/H.264, `expectsMediaDataInRealTime = true`) with `AVAssetWriterInputPixelBufferAdaptor`, AAC audio input. Starts session at first video PTS. Applies orientation transform locked at start. Safe `finish()` on any stop reason. Writes to `ClipStore` temp dir. | `start(url, orientation)`, `append(video:)`, `append(audio:)`, `finish() async -> URL` |
 | `RecordingCoordinator` | State machine `idle → starting → recording → finishing → saving → idle` (+ `failed(reason)`). Routes frames to renderer→writer, handles stop reasons (user, interruption, background, storage, thermal, permission). Debounces taps. | `start()`, `stop(reason)`, `state` |
 | `ClipStore` | Temp/pending clip files in app sandbox (`Application Support/Clips`, excluded from backup), pending-save queue, recovery scan on launch. | `newClipURL()`, `pending`, `remove()` |
-| `PhotoLibrarySaver` | `PHPhotoLibrary` add-only (`.addOnly`) save; returns local identifier for thumbnail/open. | `save(url) async throws -> String` |
+| `PhotoLibrarySaver` | `PHPhotoLibrary` add-only (`.addOnly`) save. On success the caller deletes the sandbox copy (AC-062). Cannot read assets back, so the thumbnail JPEG is generated from the local file before save/delete (ASM-012); tapping it opens Photos via `photos-redirect://`. | `save(url) async throws` |
 | `PermissionsService` | Status + request for camera, mic, location When In Use, photos add-only; re-checks on `scenePhase == .active`; `openSettings()` via `UIApplication.openSettingsURLString`. | `status`, `requestAll()`, `openSettings()` |
 | `StorageMonitor` | Free space via `volumeAvailableCapacityForImportantUsage`; polled every 5 s while recording. | `freeBytes`, `events` |
 | `ThermalMonitor` / `InterruptionMonitor` | `ProcessInfo.thermalState` notifications; session interruption + scene phase. | `events` |
 | `IdleTimerController` | `isIdleTimerDisabled` true only while recording. | `set(recording:)` |
-| `SettingsStore` | `unit` (default `.kmh`) persisted in `UserDefaults`. | `unit` |
+| `SettingsStore` | `unit` (default `.kmh`) and `overlayCorner` (`.topLeft/.topRight/.bottomLeft/.bottomRight`, default `.bottomLeft`) persisted in `UserDefaults`. | `unit`, `overlayCorner` |
 | `CameraViewModel` | `@Observable` `@MainActor` UI state: permissions, recording state, elapsed time, toasts, banners, last-clip thumbnail, preview image. | intents: `tapRecord`, `toggleUnit`, `openLastClip`, `openSettings` |
 | Views | `RootView` (onboarding vs camera), `OnboardingView`, `CameraScreen` (preview + overlay + controls), `StatusViews` (denied/empty/GPS banners), `Toast`. | — |
 | `AppEnvironment` | Composition root: picks real vs DEBUG implementations from `LaunchArguments`. | — |
@@ -81,7 +82,7 @@ flowchart LR
     SIM[SimulatedLocationProvider DEBUG] -.-> LP
   end
   LP -->|LocationSample| SM[SpeedSmoother]
-  SET[SettingsStore unit] --> OM
+  SET[SettingsStore unit + corner] --> OM
   SM -->|SpeedReading| OM[OverlayModel]
   FS -->|videoQueue| OR[OverlayRenderer]
   OM --> OR
@@ -103,6 +104,9 @@ flowchart LR
 - **Preview shows the composited buffer** (or the same overlay view rendered from the same `OverlayModel` + layout constants) so preview matches the file.
 - **Orientation:** capture buffers stay in sensor orientation; the overlay is drawn rotated into buffer space and the writer applies a track transform from the orientation locked at start, so playback is upright with the overlay upright.
 - **Fragmented safety:** set `movieFragmentInterval` (e.g. 2 s) on the writer so crashes leave a recoverable file (AC-077).
+- **Overlay corner** is part of `OverlayModel`; the renderer maps the viewer-relative corner to buffer space using the locked orientation, so the corner is correct in the upright file. Corner is locked at record start (ASM-013).
+- **Localization:** String Catalogs, development language `en`, plus `pt-BR`. SwiftUI `Text` uses `LocalizedStringKey`; non-view strings use `String(localized:)`. Overlay date via `Date.FormatStyle` with the current locale. Info.plist usage strings live in `InfoPlist.xcstrings`; `project.yml` keeps English defaults and lists both localizations.
+- **Clips:** Photos is the only library (no in-app list); one continuous file per recording, no loop/segment recording; no speed warning.
 - **Testability:** every hardware dependency sits behind a protocol injected by `AppEnvironment`; DEBUG launch arguments select fakes.
 
 ### Debug launch arguments (DEBUG only)
@@ -137,6 +141,9 @@ Frame check: `scripts/extract-frame.sh <clip> <second> <out.png>` (ffmpeg if pre
 - R-14 MUST NOT commit secrets, signing certificates, provisioning profiles, or `DEVELOPMENT_TEAM` values tied to personal accounts beyond what is needed locally (use a git-ignored `Local.xcconfig`).
 - R-15 MUST give every error a specific message and exactly one primary action.
 - R-16 MUST keep `scripts/check-traceability.sh` passing: every AC has ≥ 1 test, every test references an existing AC.
+- R-17 MUST put every user-facing string (UI, errors, toasts, Info.plist usage strings) in a String Catalog with `en` and `pt-BR` values; no hard-coded user-facing literals.
+- R-18 MUST delete the sandbox copy only after Photos confirms the save; on failure keep it pending.
+- R-19 MUST NOT add loop recording, an in-app clip library, GPS coordinates in the overlay, or a speed warning in v1 (resolved Q-001, Q-002, Q-004, Q-006).
 
 ### RECOMMENDED
 - R-20 RECOMMENDED: keep `SpeedSmoother`, `RecordingCoordinator` state machine and `OverlayModel` as pure, synchronously testable logic with injected clocks.
@@ -149,4 +156,3 @@ Frame check: `scripts/extract-frame.sh <clip> <second> <out.png>` (ffmpeg if pre
 ### MAY
 - R-30 MAY render the live preview with an `AVCaptureVideoPreviewLayer` plus a SwiftUI overlay using identical layout constants instead of displaying composited buffers, if AC-011 parity is verified by a snapshot test.
 - R-31 MAY use `AVCaptureMovieFileOutput` only in throwaway spikes; it cannot burn in the overlay, so production recording MUST go through `RecordingWriter`.
-- R-32 MAY add an in-app player (`AVKit.VideoPlayer`) for the last clip instead of opening Photos.

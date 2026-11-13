@@ -1,7 +1,7 @@
 # SpeedCam — Dashcam recording with burned-in speedometer
 
 - **Feature:** dashcam
-- **Status:** Draft
+- **Status:** Approved (open questions resolved 2026-11-13)
 - **Platform:** Native iPhone app, SwiftUI + AVFoundation + CoreLocation, min iOS 17, no third-party dependencies
 - **Owner:** Augusto Azevedo
 - **Last updated:** 2026-11-13
@@ -10,7 +10,7 @@
 
 SpeedCam records video like the native Camera app. A speedometer overlay (GPS speed, unit, GPS-signal indicator, date/time) is composited into every video frame in real time, so the overlay is part of the saved file and visible anywhere the clip is shared. Built for drivers with the phone in a car mount (usually landscape). Default unit is km/h with an mph toggle.
 
-Out of scope for v1: loop recording / auto-delete, crash (g-sensor) detection, maps/route overlay, cloud upload, editing, photo capture, front camera, Apple Watch, CarPlay.
+Out of scope for v1: loop recording / segmenting / auto-delete (Q-001), GPS coordinates, heading or street name in the overlay (Q-002), in-app clip library (Q-004), speed-limit / over-speed warning (Q-006), crash (g-sensor) detection, maps/route overlay, cloud upload, editing, photo capture, front camera, Apple Watch, CarPlay.
 
 ## 2. User stories
 
@@ -25,6 +25,8 @@ Out of scope for v1: loop recording / auto-delete, crash (g-sensor) detection, m
 - **US-09 Settings.** As a driver in Brazil, I want km/h by default and an mph option that is remembered.
 - **US-10 Testability.** As the developer, I want the whole pipeline to run on the iOS Simulator (no camera) using a synthetic camera and simulated location, producing a real video file I can inspect.
 - **US-11 Privacy & security.** As a driver, I want my clips and location to stay on my phone.
+- **US-12 Overlay corner.** As a driver, I want to choose which corner of the video the speedometer sits in, so it doesn't cover the part of the road I care about.
+- **US-13 Language.** As a driver in Brazil, I want the app in Portuguese (or English, following my phone's language).
 
 ## 3. Acceptance criteria
 
@@ -44,7 +46,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 - **AC-010** Given camera permission is granted, When the main screen is shown, Then the back wide camera preview fills the screen (aspect-fill, no letterbox bars) within 1.5 s on device.
 - **AC-011** Given the preview is visible, When not recording, Then the speedometer overlay is shown live over the preview in the same position, size and style as it appears in the recorded file.
-- **AC-012** Given the main screen, When idle, Then the record button, unit indicator, last-clip thumbnail (or an empty placeholder "No clips yet") and settings button are visible and reachable with one thumb.
+- **AC-012** Given the main screen, When idle, Then the record button, unit indicator, last-clip thumbnail (or an empty placeholder "No clips yet") and settings button are visible and reachable with one thumb. The settings sheet contains only the unit toggle (US-09) and the overlay corner picker (US-12).
 
 ### US-03 Record start/stop
 
@@ -79,8 +81,8 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 ### US-07 Save & review
 
 - **AC-060** Given a recording stopped normally and Photos add permission is granted, When finalization completes, Then the clip appears in the Photos library and a toast "✓ Saved to Photos" appears for ~2 s.
-- **AC-061** Given a clip was saved, When the main screen is shown, Then the last-clip thumbnail shows that clip's first frame; tapping it opens the clip for playback (in-app player or Photos).
-- **AC-062** Given the clip was saved to Photos successfully, When saving completes, Then the app's temporary copy is deleted.
+- **AC-061** Given a clip was saved, When the main screen is shown, Then the last-clip thumbnail shows that clip's first frame (generated from the local file before it is deleted); tapping it opens the Photos app. There is no in-app clip library or player (Q-004).
+- **AC-062** Given the clip was saved to Photos successfully, When saving completes, Then the app's own copy is deleted from the sandbox (confirmed Q-007); Given saving failed, Then the app's copy is kept as pending (AC-006).
 
 ### US-08 Failure states
 
@@ -117,6 +119,21 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-104** Given the repository, When scanned (e.g. `git grep` for keys/tokens, `.gitignore` review), Then it contains no secrets, API keys, provisioning profiles or signing certificates.
 - **AC-105** Given recorded clips, When stored, Then they live only in the app's sandbox and the user's Photos library; nothing is uploaded or shared without an explicit user action.
 
+### US-12 Overlay corner
+
+- **AC-120** Given a fresh install, When the preview and a recording are shown, Then the overlay sits in the bottom-left corner.
+- **AC-121** Given the settings sheet, When the user picks top-left, top-right, bottom-left or bottom-right, Then the live preview moves the overlay to that corner within 300 ms and a haptic confirms the choice.
+- **AC-122** Given the user picked a corner, When a clip is recorded and a frame extracted, Then the overlay pixels are in that corner of the upright video, in portrait and landscape.
+- **AC-123** Given the user picked a corner, When the app is relaunched, Then the same corner is still selected in settings, preview and new recordings.
+- **AC-124** Given recording is in progress, When the user opens settings, Then the corner picker is disabled with the hint "Applies to the next recording" (ASM-013), and the current file's overlay does not move.
+
+### US-13 Language
+
+- **AC-130** Given the device language is Portuguese (Brazil), When any screen, banner, toast or error is shown, Then all user-facing text is in pt-BR (e.g. "✓ Salvo em Fotos"); Given English, Then it is in English; Given any other language, Then it is in English.
+- **AC-131** Given the device language is pt-BR or English, When each system permission prompt appears, Then the camera, microphone, location and Photos usage strings are shown in that language (localized via `InfoPlist.xcstrings`).
+- **AC-132** Given the repository, When `Localizable.xcstrings` and `InfoPlist.xcstrings` are inspected, Then every key has a translated, non-stale value for both `en` and `pt-BR`, and no user-facing string in code is a hard-coded literal outside the catalog.
+- **AC-133** Given the device locale is pt-BR, When the overlay and timer are rendered, Then the burned-in date uses `dd/MM/yyyy HH:mm:ss`, the unit label stays "km/h" / "mph", and numbers use locale formatting.
+
 ### Premium feel (cross-cutting)
 
 - **AC-110** Given any user action (record, stop, unit toggle, open thumbnail, open settings), When performed, Then visible feedback (state change, toast, or haptic) appears within 300 ms.
@@ -128,22 +145,26 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 - **ASM-001** Speed source is `CLLocation.speed` (m/s) from CoreLocation with `kCLLocationAccuracyBestForNavigation`; no OBD/Bluetooth integration.
 - **ASM-002** Back wide camera only; 1080p @ 30 fps default, HEVC if supported else H.264, `.mov` container.
-- **ASM-003** Overlay layout v1: bottom-leading corner, large speed number, unit below, small GPS indicator, date/time line; fixed style, not user-customizable.
+- **ASM-003** Overlay layout v1: large speed number, unit below, small GPS indicator, date/time line, on a semi-opaque plate; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
 - **ASM-004** Timestamp uses device local time and locale date format (pt-BR → `dd/MM/yyyy HH:mm:ss`).
 - **ASM-005** Recording is foreground-only; backgrounding stops and saves the clip (no background recording, which iOS does not permit for camera).
 - **ASM-006** Smoothing: exponential moving average (α ≈ 0.5 at 1 Hz) on valid samples; accuracy thresholds 50 m horizontal and 5 m/s speed accuracy; 3 s staleness timeout; < 2 km/h shown as 0.
-- **ASM-007** Clips have no max length beyond storage; single continuous file per recording.
-- **ASM-008** App UI language v1 is English with strings localizable; pt-BR translation may follow.
+- **ASM-007** Clips have no max length beyond storage; one continuous file per recording, no loop recording (confirmed Q-001).
+- **ASM-008** UI ships in English (development language) and pt-BR via String Catalogs (`Localizable.xcstrings`, `InfoPlist.xcstrings`), following the device language; any other language falls back to English (confirmed Q-005).
 - **ASM-009** Orientation of the recorded file is locked at record start.
 - **ASM-010** Debug-only test hooks are enabled via launch arguments and compiled out of Release with `#if DEBUG`.
 - **ASM-011** Storage thresholds: 500 MB to start, 200 MB to auto-stop.
+- **ASM-012** With add-only Photos access the app cannot read assets back, so the thumbnail is generated from the local file before deletion and is kept as a small JPEG in the sandbox; tapping it opens the Photos app (`photos-redirect://`), not the specific asset.
+- **ASM-013** Overlay corner is locked at record start like orientation; changing it during recording applies from the next recording (preview shows the pending change with a hint).
 
-## 5. Open questions
+## 5. Questions (all resolved 2026-11-13 by Augusto)
 
-- **Q-001** Should SpeedCam offer loop recording (fixed-length segments, oldest auto-deleted) like typical dashcams, or is one continuous clip per recording enough for v1?
-- **Q-002** Should the overlay include extra data (GPS coordinates, heading, street name), or only speed, unit, GPS status and timestamp? Coordinates have privacy implications when sharing.
-- **Q-003** Is the overlay position fixed (bottom-leading) acceptable, or should the user choose corner/size?
-- **Q-004** Should clips stay only in Photos, or also be listed in an in-app library?
-- **Q-005** UI language: English, Portuguese (pt-BR), or both at launch?
-- **Q-006** Should a speed-limit / over-speed warning be included (requires a threshold the user sets)?
-- **Q-007** Should a clip also be kept in the app if saving to Photos succeeds (backup), or deleted after save (current spec AC-062)?
+No open questions remain; implementation is unblocked.
+
+- **Q-001** Loop recording? — **Resolved:** No loop recording. One continuous clip per recording (ASM-007).
+- **Q-002** Extra overlay data? — **Resolved:** Overlay shows only speed, unit, GPS status and timestamp. No coordinates, heading or street name.
+- **Q-003** Overlay position? — **Resolved:** User picks the corner (top-left, top-right, bottom-left, bottom-right); default bottom-left; saved, shown in the live preview and burned into the file (US-12, AC-120–AC-124).
+- **Q-004** Where clips live? — **Resolved:** Photos only. No in-app library (AC-061).
+- **Q-005** UI language? — **Resolved:** English and pt-BR at launch via String Catalog (`Localizable.xcstrings`), following the device language; Info.plist permission strings localized in both (US-13, AC-130–AC-133).
+- **Q-006** Over-speed warning? — **Resolved:** No speed warning in v1.
+- **Q-007** Keep app copy after save? — **Resolved:** Delete the app's copy after a successful save to Photos (AC-062 stands).
