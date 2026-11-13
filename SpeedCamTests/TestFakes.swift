@@ -34,6 +34,11 @@ final class FakeIdleTimer: IdleTimerControlling {
 
 @MainActor
 final class FakeEngine: RecordingEngine {
+    var onPreview: ((CGImage) -> Void)?
+    private(set) var previewRunning = false
+    func startPreview() { previewRunning = true }
+    func stopPreview() { previewRunning = false }
+
     var beginCalls: [(url: URL, orientation: CaptureOrientation, corner: OverlayCorner, audio: Bool)] = []
     var finishCount = 0
     var beginError: Error?
@@ -77,6 +82,52 @@ final class FakeClipURLs: ClipURLProviding, @unchecked Sendable {
         n += 1
         return URL(fileURLWithPath: "/tmp/clip-\(n).mov")
     }
+}
+
+@MainActor
+final class FakePermissions: PermissionsProviding {
+    var statuses: [PermissionKind: PermissionStatus]
+    /// Status each kind becomes when requested.
+    var answers: [PermissionKind: PermissionStatus] = [:]
+    var requests: [PermissionKind] = []
+
+    init(_ all: PermissionStatus = .granted) {
+        statuses = Dictionary(uniqueKeysWithValues: PermissionKind.allCases.map { ($0, all) })
+    }
+
+    func status(_ kind: PermissionKind) -> PermissionStatus { statuses[kind] ?? .notDetermined }
+
+    func request(_ kind: PermissionKind) async -> PermissionStatus {
+        requests.append(kind)
+        if let answer = answers[kind] { statuses[kind] = answer }
+        return status(kind)
+    }
+}
+
+@MainActor
+final class FakeOpener: SystemOpening {
+    var opened: [String] = []
+    func openSettings() { opened.append("settings") }
+    func openPhotos() { opened.append("photos") }
+}
+
+@MainActor
+final class FakeLocation: LocationProvider {
+    var authorization: LocationAuthorization = .authorized
+    var onSample: ((LocationSample) -> Void)?
+    var onAuthorizationChange: ((LocationAuthorization) -> Void)?
+    private(set) var isRunning = false
+    func start() { isRunning = true }
+    func stop() { isRunning = false }
+    func emit(kmh: Double, at date: Date) {
+        onSample?(LocationSample(speedMps: kmh / 3.6, speedAccuracy: 0.5, horizontalAccuracy: 5, timestamp: date))
+    }
+}
+
+@MainActor
+final class FakeThermal: ThermalMonitoring {
+    var level: ThermalLevel = .nominal
+    var onChange: ((ThermalLevel) -> Void)?
 }
 
 /// Yields so `Task`s spawned on the main actor can run.
