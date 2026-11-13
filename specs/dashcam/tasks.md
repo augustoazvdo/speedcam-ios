@@ -9,8 +9,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-002 `.gitignore` (xcodeproj optional, DerivedData, `Local.xcconfig`, `*.mobileprovision`, `*.p12`, exports). · US-11 · AC-104
 - [x] T-003 `scripts/check-traceability.sh`: parse AC ids in spec.md, grep tests for AC refs, fail on missing/unknown. · all · (audit tooling)
 - [x] T-004 `scripts/extract-frame.sh` (ffmpeg, fallback AVAssetImageGenerator Swift script). · US-10 · AC-093
-- [ ] T-005 Protocols + `AppEnvironment` + `LaunchArguments` (DEBUG) skeletons: `FrameSource`, `LocationProvider`, `PhotoLibrarySaving`, `PermissionsProviding`, `StorageMonitoring`, `ThermalMonitoring`, `Clock`. · US-10 · AC-090, AC-091, AC-103
-- [ ] T-006 Add `Localizable.xcstrings` and `InfoPlist.xcstrings` (en + pt-BR) with the four usage strings; wire into `project.yml`. · US-13 · AC-131
+- [x] T-005 Protocols + `AppEnvironment` + `LaunchArguments` (DEBUG) skeletons: `FrameSource`, `LocationProvider`, `PhotoLibrarySaving`, `PermissionsProviding`, `StorageMonitoring`, `ThermalMonitoring`, `Clock`. · US-10 · AC-090, AC-091, AC-103
+- [x] T-006 Add `Localizable.xcstrings` and `InfoPlist.xcstrings` (en + pt-BR) with the four usage strings; wire into `project.yml`. · US-13 · AC-131
 
 ## Phase 1 — Speed logic (unit tests first)
 - [ ] T-010 Tests: `SpeedSmoother` invalid −1 → "--"; stale > 3 s → "--"/noFix; poor accuracy → "--"/weak; < 2 km/h → "0"; smoothing bound; rounding; 13.89 m/s → 50 km/h / 31 mph. · US-05, US-09 · AC-040–AC-045

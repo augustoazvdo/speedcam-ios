@@ -1,0 +1,46 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "CFBundleDisplayName" : {
+      "comment" : "App name on the Home Screen.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam" } }
+      }
+    },
+    "NSCameraUsageDescription" : {
+      "comment" : "Camera permission prompt.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam uses the camera to record dashcam video of the road with your speed burned into the footage." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "O SpeedCam usa a câmera para gravar vídeos da estrada com a sua velocidade gravada nas imagens." } }
+      }
+    },
+    "NSLocationWhenInUseUsageDescription" : {
+      "comment" : "Location When In Use permission prompt.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam uses your location only while the app is open, to measure your driving speed and show it on the video. Your location is never stored or shared." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "O SpeedCam usa sua localização apenas com o app aberto, para medir a velocidade e mostrá-la no vídeo. Sua localização nunca é armazenada nem compartilhada." } }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Microphone permission prompt.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam uses the microphone to record sound with your dashcam clips. You can still record without audio." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "O SpeedCam usa o microfone para gravar o som junto com os clipes. Você pode gravar sem áudio." } }
+      }
+    },
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Photos add-only permission prompt.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "SpeedCam saves finished clips to your Photos library. It can only add videos and cannot see your other photos." } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "O SpeedCam salva os clipes prontos na sua biblioteca de Fotos. Ele só pode adicionar vídeos e não vê suas outras fotos." } }
+      }
+    }
+  },
+  "version" : "1.0"
+}

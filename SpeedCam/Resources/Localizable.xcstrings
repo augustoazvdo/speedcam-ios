@@ -1,0 +1,13 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Continue" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Continue" } },
+        "pt-BR" : { "stringUnit" : { "state" : "translated", "value" : "Continuar" } }
+      }
+    }
+  },
+  "version" : "1.0"
+}
