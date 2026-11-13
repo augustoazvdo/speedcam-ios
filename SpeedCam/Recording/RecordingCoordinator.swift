@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import Observation
 
@@ -10,6 +11,9 @@ enum RecordingResult: Equatable, Sendable {
 
 @MainActor
 protocol RecordingEngine: AnyObject {
+    var onPreview: ((CGImage) -> Void)? { get set }
+    func startPreview()
+    func stopPreview()
     func beginRecording(to url: URL, orientation: CaptureOrientation, corner: OverlayCorner, includeAudio: Bool) throws
     func finishRecording() async -> RecordingResult
 }
