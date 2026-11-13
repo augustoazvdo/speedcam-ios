@@ -57,9 +57,17 @@ final class OverlayRendererTests: XCTestCase {
     func test_AC030_placeholderAndMphAreRendered() throws {
         let output = try XCTUnwrap(renderer.render(TestImages.solidBuffer(), model: model(nil, unit: .mph, gps: .noFix)))
         let text = try TestImages.recognizedText(TestImages.cgImage(CIImage(cvPixelBuffer: output))).joined(separator: " ")
-        XCTAssertTrue(text.contains("--") || text.contains("—") || text.contains("-"), text)
         XCTAssertTrue(text.contains("mph"), text)
         XCTAssertFalse(text.contains("50"), text)
+
+        // OCR does not read dashes reliably; check the speed row has white dash pixels instead.
+        let size = CGSize(width: 1920, height: 1080)
+        let dashes = Bitmap(cgImage: renderer.overlayImage(for: model(nil, unit: .mph, gps: .noFix), uprightSize: size))
+        let speedRow = CGRect(x: 0, y: 0, width: dashes.width, height: dashes.height / 2)
+        let white = dashes.luminances(in: speedRow).filter { $0 > 0.9 }.count
+        XCTAssertGreaterThan(white, 100, "\"--\" not drawn")
+        let fifty = Bitmap(cgImage: renderer.overlayImage(for: model(50, unit: .mph, gps: .noFix), uprightSize: size))
+        XCTAssertNotEqual(dashes.bytes, fifty.bytes)
     }
 
     // AC-041 / AC-042 / AC-005: each GPS state draws a distinct indicator.

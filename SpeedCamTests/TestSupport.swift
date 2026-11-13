@@ -27,9 +27,11 @@ struct Bitmap {
         return (Double(bytes[i]) / 255, Double(bytes[i + 1]) / 255, Double(bytes[i + 2]) / 255)
     }
 
+    /// WCAG relative luminance (linear sRGB).
     func luminance(_ x: Int, _ y: Int) -> Double {
+        func linear(_ c: Double) -> Double { c <= 0.04045 ? c / 12.92 : pow((c + 0.055) / 1.055, 2.4) }
         let (r, g, b) = rgb(x, y)
-        return 0.2126 * r + 0.7152 * g + 0.0722 * b
+        return 0.2126 * linear(r) + 0.7152 * linear(g) + 0.0722 * linear(b)
     }
 
     /// Fraction of pixels in `rect` that differ from `background` by more than `tolerance` per channel.
