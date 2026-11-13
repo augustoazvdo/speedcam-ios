@@ -31,8 +31,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 ## Phase 3 — Recording pipeline
 - [x] T-030 Tests: `RecordingCoordinator` state machine (start/stop, debounce, every stop reason finalizes, storage start threshold, thermal serious warn / critical stop, interruption, background, camera revoke stop, location revoke continue). Fakes for all monitors. · US-03, US-08 · AC-020, AC-021, AC-023, AC-070–AC-076, AC-078
 - [x] T-031 Implement `RecordingCoordinator`, `StorageMonitor`, `ThermalMonitor`, `InterruptionMonitor`. · US-03, US-08 · same
-- [ ] T-032 Tests: `RecordingWriter` with `SyntheticFrameSource` + silent audio writes a playable .mov: video track 1080p ~30 fps, audio track present when enabled, A/V offset ≤ 100 ms, orientation transform, overlay on frames; mid-recording finish produces playable file. · US-04, US-06, US-08 · AC-031, AC-032, AC-052, AC-072, AC-073
-- [ ] T-033 Implement `SyntheticFrameSource` (DEBUG) and `RecordingWriter` (fragment interval). · US-04, US-10 · AC-031, AC-032, AC-090
+- [x] T-032 Tests: `RecordingWriter` with `SyntheticFrameSource` + silent audio writes a playable .mov: video track 1080p ~30 fps, audio track present when enabled, A/V offset ≤ 100 ms, orientation transform, overlay on frames; mid-recording finish produces playable file. · US-04, US-06, US-08 · AC-031, AC-032, AC-052, AC-072, AC-073
+- [x] T-033 Implement `SyntheticFrameSource` (DEBUG) and `RecordingWriter` (fragment interval). · US-04, US-10 · AC-031, AC-032, AC-090
 - [ ] T-034 Implement `CameraFrameSource`, `AudioSource`, `CaptureSessionService` (sessionQueue, interruptions). Device-only manual check. · US-02, US-04 · AC-010, AC-031
 - [ ] T-035 Tests: `ClipRecovery` recovers playable partial file on launch / reports unrecoverable. · US-08 · AC-077
 - [ ] T-036 Implement `ClipStore` + `ClipRecovery`. · US-08 · AC-077
