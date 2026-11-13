@@ -39,6 +39,18 @@ final class CameraScreenUITests: XCTestCase {
         XCTAssertTrue(app.waitFor("thumbnail.button").exists) // AC-061
     }
 
+    // AC-022: the idle timer is disabled only while recording and restored afterwards.
+    func test_AC022_idleTimerDisabledOnlyWhileRecording() {
+        let app = UIArgs.launch()
+        let probe = app.waitFor("debug.idleTimer")
+        XCTAssertEqual(probe.value as? String, "enabled")
+        app.waitFor("record.button").tap()
+        _ = app.waitFor("recording.indicator")
+        XCTAssertTrue(waitUntil(timeout: 2) { probe.value as? String == "disabled" }, String(describing: probe.value))
+        app.element("record.button").tap()
+        XCTAssertTrue(waitUntil(timeout: 3) { probe.value as? String == "enabled" }, String(describing: probe.value))
+    }
+
     // AC-061: the thumbnail opens the Photos app (no in-app library).
     func test_AC061_thumbnailOpensPhotosApp() {
         let app = UIArgs.launch()

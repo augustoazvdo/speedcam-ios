@@ -178,6 +178,8 @@ final class RecordingCoordinator {
 
     var isSaving: Bool { state == .finishing || state == .saving }
 
+    var isIdleTimerDisabled: Bool { idleTimer.isIdleTimerDisabled }
+
     var recordingStart: Date? {
         if case .recording(let since) = state { return since }
         return nil
