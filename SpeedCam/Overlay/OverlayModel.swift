@@ -110,6 +110,10 @@ final class OverlayStateBox: @unchecked Sendable {
         lock.withLock { liveOrientation }
     }
 
+    var lockedOrientation: CaptureOrientation? {
+        lock.withLock { locked?.orientation }
+    }
+
     func snapshot(date: Date) -> OverlayModel {
         lock.withLock {
             OverlayModel(reading: reading, date: date,

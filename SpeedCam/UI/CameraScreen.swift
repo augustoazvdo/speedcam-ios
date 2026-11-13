@@ -105,12 +105,17 @@ struct DebugStateProbe: View {
     let viewModel: CameraViewModel
 
     var body: some View {
-        let recording = viewModel.coordinator.isRecording
         Color.clear
             .frame(width: 1, height: 1)
             .accessibilityElement()
             .accessibilityIdentifier("debug.idleTimer")
-            .accessibilityValue(recording && UIApplication.shared.isIdleTimerDisabled ? "disabled" : (UIApplication.shared.isIdleTimerDisabled ? "disabled" : "enabled"))
+            .accessibilityValue(viewModel.coordinator.isIdleTimerDisabled ? "disabled" : "enabled")
+            .allowsHitTesting(false)
+        Color.clear
+            .frame(width: 1, height: 1)
+            .accessibilityElement()
+            .accessibilityIdentifier("debug.orientation")
+            .accessibilityValue("live=\(viewModel.orientation.rawValue) locked=\(viewModel.lockedOrientation?.rawValue ?? "none")")
             .allowsHitTesting(false)
     }
 }

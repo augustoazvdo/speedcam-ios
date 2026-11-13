@@ -186,6 +186,12 @@ final class CameraViewModel {
     var selectedCorner: OverlayCorner { settings.overlayCorner }
     var hasClips: Bool { thumbnail != nil }
 
+    /// Orientation the current file was locked to at record start (AC-052); nil when not recording.
+    var lockedOrientation: CaptureOrientation? {
+        _ = coordinator.state
+        return overlay.lockedOrientation
+    }
+
     var nextStep: NextStep {
         if showOnboarding { return .continueOnboarding }
         if let notice = coordinator.notice { return .noticeAction(notice.kind.action) }
