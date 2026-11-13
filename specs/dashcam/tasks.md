@@ -40,8 +40,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 ## Phase 4 — Save & permissions
 - [x] T-040 Tests: `PhotoLibrarySaver` flow with fake: success → toast + temp deleted; denied → kept pending, retried on activation. · US-07, US-01 · AC-006, AC-060, AC-062
 - [x] T-041 Implement `PhotoLibrarySaver` (`.addOnly`) + pending queue. · US-07 · AC-006, AC-060, AC-062 (thumbnail JPEG generated before deleting the sandbox copy, ASM-012)
-- [ ] T-042 Tests: `PermissionsService` + view model: onboarding before prompts, request order, no Always/full access, denied states per permission, refresh on becoming active. · US-01 · AC-001–AC-007
-- [ ] T-043 Implement `PermissionsService` (openSettings deep link). · US-01 · AC-001–AC-007
+- [x] T-042 Tests: `PermissionsService` + view model: onboarding before prompts, request order, no Always/full access, denied states per permission, refresh on becoming active. · US-01 · AC-001–AC-007
+- [x] T-043 Implement `PermissionsService` (openSettings deep link). · US-01 · AC-001–AC-007
 
 ## Phase 5 — UI
 - [ ] T-050 UI tests (launch args: synthetic camera, simulated location, skip onboarding): idle screen controls + "No clips yet"; tap record → red dot + timer; stop → "Saving…" → "✓ Saved to Photos"; thumbnail opens clip; unit toggle live; denied/no-GPS states each show one action. · US-02, US-03, US-07, US-09 · AC-011, AC-012, AC-020, AC-021, AC-061, AC-082, AC-110–AC-113
