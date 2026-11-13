@@ -5,10 +5,10 @@ Spec: [spec.md](spec.md) · Design: [design.md](design.md). Status: Approved.
 Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the test passes. All questions are resolved (spec §5); no task is blocked. If a new `Q-xxx` is raised, tasks touching it are blocked until answered.
 
 ## Phase 0 — Scaffold
-- [ ] T-001 Create `project.yml` (app, unit, UI test targets; Debug/Release; iOS 17; bundle id `com.augusto.speedcam`; Info.plist usage strings; no background modes; localizations `en`, `pt-BR`; git-ignored `Local.xcconfig` for team). Generate with xcodegen; build empty app on "iPhone 18 Pro". · US-11 · AC-101, AC-104
-- [ ] T-002 `.gitignore` (xcodeproj optional, DerivedData, `Local.xcconfig`, `*.mobileprovision`, `*.p12`, exports). · US-11 · AC-104
-- [ ] T-003 `scripts/check-traceability.sh`: parse AC ids in spec.md, grep tests for AC refs, fail on missing/unknown. · all · (audit tooling)
-- [ ] T-004 `scripts/extract-frame.sh` (ffmpeg, fallback AVAssetImageGenerator Swift script). · US-10 · AC-093
+- [x] T-001 Create `project.yml` (app, unit, UI test targets; Debug/Release; iOS 17; bundle id `com.augusto.speedcam`; Info.plist usage strings; no background modes; localizations `en`, `pt-BR`; git-ignored `Local.xcconfig` for team). Generate with xcodegen; build empty app on "iPhone 18 Pro". · US-11 · AC-101, AC-104
+- [x] T-002 `.gitignore` (xcodeproj optional, DerivedData, `Local.xcconfig`, `*.mobileprovision`, `*.p12`, exports). · US-11 · AC-104
+- [x] T-003 `scripts/check-traceability.sh`: parse AC ids in spec.md, grep tests for AC refs, fail on missing/unknown. · all · (audit tooling)
+- [x] T-004 `scripts/extract-frame.sh` (ffmpeg, fallback AVAssetImageGenerator Swift script). · US-10 · AC-093
 - [ ] T-005 Protocols + `AppEnvironment` + `LaunchArguments` (DEBUG) skeletons: `FrameSource`, `LocationProvider`, `PhotoLibrarySaving`, `PermissionsProviding`, `StorageMonitoring`, `ThermalMonitoring`, `Clock`. · US-10 · AC-090, AC-091, AC-103
 - [ ] T-006 Add `Localizable.xcstrings` and `InfoPlist.xcstrings` (en + pt-BR) with the four usage strings; wire into `project.yml`. · US-13 · AC-131
 
