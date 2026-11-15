@@ -48,9 +48,37 @@ final class OverlayRendererTests: XCTestCase {
         let text = try TestImages.recognizedText(image).joined(separator: " ")
         XCTAssertTrue(text.contains("50"), text)
         XCTAssertTrue(text.contains("km/h"), text)
+
+        let mph = try TestImages.recognizedText(renderer.overlayImage(for: model(50, unit: .mph),
+                                                                      uprightSize: CGSize(width: 1920, height: 1080))).joined(separator: " ")
+        XCTAssertTrue(mph.contains("mph"), mph)
+        XCTAssertTrue(mph.contains("150"), mph)
         XCTAssertTrue(text.contains("GPS"), text)
         XCTAssertTrue(text.contains("13/11/2026"), text)
         XCTAssertTrue(text.contains("12:36:00"), text)
+    }
+
+    // AC-134: the speed display is a purple-to-blue semicircular gauge with a labeled scale.
+    func test_AC134_speedGaugeStyleAndScaleAreRendered() throws {
+        let m = model()
+        let image = renderer.overlayImage(for: m, uprightSize: CGSize(width: 1920, height: 1080))
+        let text = try TestImages.recognizedText(image).joined(separator: " ")
+        XCTAssertTrue(text.contains("0"), text)
+        XCTAssertTrue(text.contains("240"), text)
+        XCTAssertTrue(text.contains("50"), text)
+        XCTAssertTrue(text.contains("km/h"), text)
+
+        let bitmap = Bitmap(cgImage: image)
+        let purple = stride(from: 0, to: bitmap.bytes.count, by: 4).filter {
+            let r = Double(bitmap.bytes[$0]), g = Double(bitmap.bytes[$0 + 1]), b = Double(bitmap.bytes[$0 + 2])
+            return r > 70 && b > 90 && b > g * 1.5 && r > g * 1.3
+        }.count
+        let blue = stride(from: 0, to: bitmap.bytes.count, by: 4).filter {
+            let r = Double(bitmap.bytes[$0]), g = Double(bitmap.bytes[$0 + 1]), b = Double(bitmap.bytes[$0 + 2])
+            return b > 100 && b > r * 1.4 && b > g * 1.3
+        }.count
+        XCTAssertGreaterThan(purple, 100, "purple end of gauge missing")
+        XCTAssertGreaterThan(blue, 100, "blue end of gauge missing")
     }
 
     // AC-030 / AC-040: placeholder and mph label are rendered.
@@ -58,7 +86,7 @@ final class OverlayRendererTests: XCTestCase {
         let output = try XCTUnwrap(renderer.render(TestImages.solidBuffer(), model: model(nil, unit: .mph, gps: .noFix)))
         let text = try TestImages.recognizedText(TestImages.cgImage(CIImage(cvPixelBuffer: output))).joined(separator: " ")
         XCTAssertTrue(text.contains("mph"), text)
-        XCTAssertFalse(text.contains("50"), text)
+        XCTAssertFalse(text.contains("50 mph"), text)
 
         // OCR does not read dashes reliably; check the speed row has white dash pixels instead.
         let size = CGSize(width: 1920, height: 1080)
