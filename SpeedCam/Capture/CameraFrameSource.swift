@@ -1,7 +1,7 @@
 import AVFoundation
 import Foundation
 
-/// Back wide camera frames in sensor orientation (ASM-002).
+/// Rear virtual multi-camera frames in sensor orientation (ASM-002).
 final class CameraFrameSource: FrameSource, @unchecked Sendable {
     let service: CaptureSessionService
     private let includeAudio: @Sendable () -> Bool

@@ -37,6 +37,7 @@ enum L10n {
     static var saving: String { String(localized: "Saving…") }
     static var savedToPhotos: String { String(localized: "✓ Saved to Photos") }
     static var preview: String { String(localized: "Camera preview") }
+    static var cameraZoom: String { String(localized: "Camera zoom") }
 
     // Settings sheet
     static var speedUnit: String { String(localized: "Speed unit") }

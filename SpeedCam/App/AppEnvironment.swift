@@ -68,7 +68,7 @@ struct AppEnvironment {
                                         engine: pipeline, coordinator: coordinator, saveService: saveService,
                                         settings: settings, overlay: overlay, haptics: Haptics(),
                                         thermal: ThermalMonitor(), clock: SystemClock(),
-                                        cameraAvailable: frames.isAvailable)
+                                        cameraAvailable: frames.isAvailable, cameraZoom: captureService)
         captureService.onEvent = { [weak viewModel] event in
             Task { @MainActor in await viewModel?.handle(event) }
         }

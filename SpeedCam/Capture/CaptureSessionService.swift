@@ -3,7 +3,7 @@ import Foundation
 
 /// Owns the AVCaptureSession. All configuration/start/stop runs on `sessionQueue` (R-11);
 /// sample buffers arrive on `videoQueue` / `audioQueue`. Device-only (the Simulator has no camera).
-final class CaptureSessionService: NSObject, @unchecked Sendable {
+final class CaptureSessionService: NSObject, CameraZoomControlling, @unchecked Sendable {
     let session = AVCaptureSession()
     private let sessionQueue = DispatchQueue(label: "com.augusto.speedcam.session")
     let videoQueue = DispatchQueue(label: "com.augusto.speedcam.video", qos: .userInteractive)
@@ -11,6 +11,7 @@ final class CaptureSessionService: NSObject, @unchecked Sendable {
     private let videoOutput = AVCaptureVideoDataOutput()
     private let audioOutput = AVCaptureAudioDataOutput()
     private let lock = NSLock()
+    private let preferredCamera: AVCaptureDevice?
     private var configured = false
     private var audioConfigured = false
     private var videoHandler: (@Sendable (VideoFrame) -> Void)?
@@ -18,11 +19,43 @@ final class CaptureSessionService: NSObject, @unchecked Sendable {
     private var observers: [any NSObjectProtocol] = []
     var onEvent: (@Sendable (CaptureEvent) -> Void)?
 
-    static var hasCamera: Bool {
-        AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) != nil
+    private static let rearCameraTypes: [AVCaptureDevice.DeviceType] = [
+        .builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera,
+    ]
+
+    private static var rearCamera: AVCaptureDevice? {
+        rearCameraTypes.lazy.compactMap {
+            AVCaptureDevice.default($0, for: .video, position: .back)
+        }.first
+    }
+
+    static var hasCamera: Bool { rearCamera != nil }
+
+    var zoomOptions: [CameraZoomOption] {
+        guard let device = preferredCamera else { return [] }
+        return CameraZoomOption.available(minimum: device.minAvailableVideoZoomFactor,
+                                          maximum: device.maxAvailableVideoZoomFactor,
+                                          switchOvers: device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat($0.doubleValue) },
+                                          displayMultiplier: Self.displayZoomMultiplier(for: device))
+    }
+
+    private static func displayZoomMultiplier(for device: AVCaptureDevice) -> CGFloat {
+        if #available(iOS 18.0, *) { return device.displayVideoZoomFactorMultiplier }
+        return 1
+    }
+
+    func selectZoom(factor: CGFloat) {
+        guard zoomOptions.contains(where: { abs($0.factor - factor) < 0.01 }) else { return }
+        sessionQueue.async { [weak self] in
+            guard let self, let camera = preferredCamera,
+                  (try? camera.lockForConfiguration()) != nil else { return }
+            camera.ramp(toVideoZoomFactor: factor, withRate: 6)
+            camera.unlockForConfiguration()
+        }
     }
 
     override init() {
+        preferredCamera = Self.rearCamera
         super.init()
         let center = NotificationCenter.default
         observers = [
@@ -83,7 +116,7 @@ final class CaptureSessionService: NSObject, @unchecked Sendable {
 
         if !configured {
             session.sessionPreset = .hd1920x1080
-            guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+            guard let camera = preferredCamera,
                   let input = try? AVCaptureDeviceInput(device: camera), session.canAddInput(input) else { return }
             session.addInput(input)
             if (try? camera.lockForConfiguration()) != nil {

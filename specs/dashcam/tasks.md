@@ -78,7 +78,7 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 
 ## Phase 9 — Device zoom controls
 - [x] T-096 Test first: AC-136 derives selectable zoom stops and labels from supported camera limits and virtual-device switch-over factors.
-- [ ] T-097 Implement dynamic rear-camera lens/zoom controls using AVFoundation; refresh project, verify simulator behavior where hardware permits, and document physical-device check.
+- [x] T-097 Implement dynamic rear-camera lens/zoom controls using AVFoundation; refresh project, verify simulator behavior where hardware permits, and document physical-device check.
 
 ## Phase 10 — Audit
 - [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-136 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all

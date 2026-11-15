@@ -545,6 +545,13 @@
         }
       }
     },
+    "Camera zoom": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": { "stringUnit": { "state": "translated", "value": "Camera zoom" } },
+        "pt-BR": { "stringUnit": { "state": "translated", "value": "Zoom da câmera" } }
+      }
+    },
     "Speed unit": {
       "extractionState": "manual",
       "localizations": {

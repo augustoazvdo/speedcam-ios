@@ -1,5 +1,33 @@
 import SwiftUI
 
+struct CameraZoomPicker: View {
+    let viewModel: CameraViewModel
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(viewModel.cameraZoomOptions) { option in
+                Button {
+                    viewModel.selectCameraZoom(option)
+                } label: {
+                    Text(verbatim: option.label)
+                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .monospacedDigit()
+                        .frame(minWidth: 38, minHeight: 36)
+                        .foregroundStyle(viewModel.selectedCameraZoom == option.factor ? .black : .white)
+                        .background(viewModel.selectedCameraZoom == option.factor ? Color.white : Color.clear, in: Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(option.label)
+                .accessibilityIdentifier("camera.zoom.\(option.label.replacingOccurrences(of: "×", with: ""))")
+            }
+        }
+        .padding(5)
+        .background(.ultraThinMaterial, in: Capsule())
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(L10n.cameraZoom)
+    }
+}
+
 /// Same controls, order, icons and style in every orientation (AC-051, AC-112):
 /// thumbnail · (spacer) · record · unit · settings, leading→trailing in portrait and bottom→top in landscape.
 struct ControlsView: View {

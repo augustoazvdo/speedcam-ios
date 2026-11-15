@@ -103,6 +103,7 @@ final class CameraViewModel {
     private(set) var reading: SpeedReading
     private(set) var previewImage: CGImage?
     private(set) var thumbnail: UIImage?
+    private(set) var selectedCameraZoom: CGFloat
     private(set) var orientation: CaptureOrientation = .portrait
     var showSettings = false
     var showMicDialog = false
@@ -119,6 +120,7 @@ final class CameraViewModel {
     @ObservationIgnored private let thermal: ThermalMonitoring
     @ObservationIgnored private let clock: WallClock
     @ObservationIgnored private let cameraAvailable: Bool
+    @ObservationIgnored private let cameraZoom: CameraZoomControlling?
     @ObservationIgnored private let speedTickInterval: TimeInterval?
     @ObservationIgnored private var smoother = SpeedSmoother()
     @ObservationIgnored private var tickTask: Task<Void, Never>?
@@ -127,6 +129,7 @@ final class CameraViewModel {
     init(permissions: PermissionsProviding, opener: SystemOpening, location: LocationProvider, engine: RecordingEngine,
          coordinator: RecordingCoordinator, saveService: ClipSaveService, settings: SettingsStore, overlay: OverlayStateBox,
          haptics: HapticsPlaying, thermal: ThermalMonitoring, clock: WallClock, cameraAvailable: Bool,
+         cameraZoom: CameraZoomControlling? = nil,
          speedTickInterval: TimeInterval? = 0.25) {
         permissionsProvider = permissions
         self.opener = opener
@@ -140,6 +143,10 @@ final class CameraViewModel {
         self.thermal = thermal
         self.clock = clock
         self.cameraAvailable = cameraAvailable
+        self.cameraZoom = cameraZoom
+        let initialZoom = cameraZoom?.zoomOptions.first(where: { abs($0.factor - 1) < 0.01 })
+            ?? cameraZoom?.zoomOptions.first
+        selectedCameraZoom = initialZoom?.factor ?? 1
         self.speedTickInterval = speedTickInterval
         showOnboarding = !settings.onboardingCompleted
         reading = .unavailable(settings.unit, gps: .noFix)
@@ -330,6 +337,15 @@ final class CameraViewModel {
         settings.unit = settings.unit.toggled
         haptics.selection()
         refreshReading()
+    }
+
+    var cameraZoomOptions: [CameraZoomOption] { cameraZoom?.zoomOptions ?? [] }
+
+    func selectCameraZoom(_ option: CameraZoomOption) {
+        guard cameraZoomOptions.contains(option), abs(option.factor - selectedCameraZoom) >= 0.01 else { return }
+        selectedCameraZoom = option.factor
+        cameraZoom?.selectZoom(factor: option.factor)
+        haptics.selection()
     }
 
     func selectUnit(_ unit: SpeedUnit) {

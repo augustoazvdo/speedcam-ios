@@ -42,6 +42,12 @@ struct CameraScreen: View {
             cameraContent
             statusStack
         }
+        .overlay(alignment: .bottom) {
+            if viewModel.cameraZoomOptions.count > 1 {
+                CameraZoomPicker(viewModel: viewModel)
+                    .padding(.bottom, 20)
+            }
+        }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
