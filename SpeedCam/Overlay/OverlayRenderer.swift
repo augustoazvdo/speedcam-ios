@@ -6,7 +6,7 @@ import Foundation
 import Metal
 import UIKit
 
-/// Draws the speedometer plate (ASM-003) and composites it onto sensor-orientation frames so it is
+/// Draws the speedometer plate (ASM-003, AC-134) and composites it onto sensor-orientation frames so it is
 /// upright in the viewer's chosen corner after the track transform. The same output feeds the
 /// writer and the live preview, so preview == file (AC-011).
 final class OverlayRenderer: @unchecked Sendable {
@@ -95,6 +95,8 @@ final class OverlayRenderer: @unchecked Sendable {
         let margin: CGFloat
         let padding: CGFloat
         let plateSize: CGSize
+        let gaugeRadius: CGFloat
+        let gaugeBaselineTop: CGFloat
         let speedFont: CTFont
         let unitFont: CTFont
         let smallFont: CTFont
@@ -105,19 +107,21 @@ final class OverlayRenderer: @unchecked Sendable {
         defer { lock.unlock() }
         if let cached = layouts[shortSide] { return cached }
         let s = CGFloat(shortSide)
-        let speedFont = Self.font(size: (0.13 * s).rounded(), weight: .heavy, rounded: true)
-        let unitFont = Self.font(size: (0.042 * s).rounded(), weight: .semibold, rounded: true)
-        let smallFont = Self.font(size: (0.03 * s).rounded(), weight: .medium, rounded: false)
+        let speedFont = Self.font(size: (0.105 * s).rounded(), weight: .heavy, rounded: true)
+        let unitFont = Self.font(size: (0.038 * s).rounded(), weight: .semibold, rounded: true)
+        let smallFont = Self.font(size: (0.026 * s).rounded(), weight: .medium, rounded: false)
         let padding = (0.03 * s).rounded()
         let barsWidth = Self.barsSize(font: smallFont).width + padding * 0.4
         let gpsWidth = [GPSStatus.good, .weak, .noFix, .off]
             .map { barsWidth + Self.width(OverlayFormat.gpsLabel($0), font: smallFont) }.max() ?? 0
-        let contentWidth = max(Self.width("00/00/0000 00:00:00", font: smallFont),
-                               Self.width("888", font: speedFont), gpsWidth)
-        let height = padding * 2 + Self.lineHeight(speedFont) + Self.lineHeight(unitFont)
-            + padding * 0.5 + Self.lineHeight(smallFont) * 2
+        let contentWidth = max(Self.width("00/00/0000 00:00:00", font: smallFont), gpsWidth, s * 0.36)
+        let width = (contentWidth + padding * 2).rounded(.up)
+        let radius = min((width - padding * 2) * 0.48, s * 0.235)
+        let baselineTop = radius + padding * 1.55
+        let height = baselineTop + Self.lineHeight(smallFont) * 2 + padding * 1.4
         let layout = Layout(margin: (0.04 * s).rounded(), padding: padding,
-                            plateSize: CGSize(width: (contentWidth + padding * 2).rounded(.up), height: height.rounded(.up)),
+                            plateSize: CGSize(width: width, height: height.rounded(.up)),
+                            gaugeRadius: radius, gaugeBaselineTop: baselineTop,
                             speedFont: speedFont, unitFont: unitFont, smallFont: smallFont)
         layouts[shortSide] = layout
         return layout
@@ -170,24 +174,63 @@ final class OverlayRenderer: @unchecked Sendable {
                             space: CGColorSpace(name: CGColorSpace.sRGB)!,
                             bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)!
         let p = layout.padding
-        let radius = p * 0.9
-        ctx.addPath(CGPath(roundedRect: CGRect(origin: .zero, size: size), cornerWidth: radius, cornerHeight: radius, transform: nil))
+        let plateRadius = p * 0.9
+        ctx.addPath(CGPath(roundedRect: CGRect(origin: .zero, size: size), cornerWidth: plateRadius, cornerHeight: plateRadius, transform: nil))
         ctx.setFillColor(CGColor(gray: 0, alpha: 0.6))
         ctx.fillPath()
 
         let white = CGColor(gray: 1, alpha: 1)
-        var top = p // distance from the plate's top edge
-        func drawLine(_ text: String, font: CTFont, color: CGColor, x: CGFloat) {
+        func drawLine(_ text: String, font: CTFont, color: CGColor, x: CGFloat, top: CGFloat) {
             let line = CTLineCreateWithAttributedString(Self.attributed(text, font: font, color: color))
             let ascent = CTFontGetAscent(font)
             ctx.textPosition = CGPoint(x: x, y: size.height - top - ascent)
             CTLineDraw(line, ctx)
-            top += Self.lineHeight(font)
         }
 
-        drawLine(key.display, font: layout.speedFont, color: white, x: p)
-        drawLine(key.unit, font: layout.unitFont, color: white, x: p)
-        top += p * 0.5
+        func drawCentered(_ text: String, font: CTFont, top: CGFloat) {
+            let textWidth = Self.width(text, font: font)
+            drawLine(text, font: font, color: white, x: (size.width - textWidth) / 2, top: top)
+        }
+
+        // Gauge track and clipped horizontal gradient, from violet at 0 to blue at the maximum.
+        let radius = layout.gaugeRadius
+        let center = CGPoint(x: size.width / 2, y: size.height - layout.gaugeBaselineTop)
+        let arc = CGMutablePath()
+        arc.addArc(center: center, radius: radius, startAngle: .pi, endAngle: 0, clockwise: true)
+        ctx.saveGState()
+        ctx.addPath(arc)
+        ctx.setStrokeColor(CGColor(gray: 0.28, alpha: 1))
+        ctx.setLineWidth(radius * 0.13)
+        ctx.setLineCap(.round)
+        ctx.strokePath()
+        ctx.addPath(arc)
+        ctx.setLineWidth(radius * 0.115)
+        ctx.replacePathWithStrokedPath()
+        ctx.clip()
+        let colors = [CGColor(red: 0.78, green: 0.25, blue: 1, alpha: 1), CGColor(red: 0.12, green: 0.32, blue: 1, alpha: 1)] as CFArray
+        let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors, locations: [0, 1])!
+        ctx.drawLinearGradient(gradient, start: CGPoint(x: center.x - radius, y: center.y), end: CGPoint(x: center.x + radius, y: center.y), options: [])
+        ctx.restoreGState()
+
+        // Thirteen radial divisions form the 0–240 km/h or 0–150 mph scale.
+        for index in 0...12 {
+            let angle = CGFloat.pi - CGFloat.pi * CGFloat(index) / 12
+            let inner = radius * (index.isMultiple(of: 3) ? 0.77 : 0.83)
+            let outer = radius * 0.91
+            ctx.move(to: CGPoint(x: center.x + cos(angle) * inner, y: center.y + sin(angle) * inner))
+            ctx.addLine(to: CGPoint(x: center.x + cos(angle) * outer, y: center.y + sin(angle) * outer))
+            ctx.setStrokeColor(CGColor(gray: 0, alpha: 0.9))
+            ctx.setLineWidth(index.isMultiple(of: 3) ? max(2, radius * 0.012) : max(1, radius * 0.007))
+            ctx.strokePath()
+        }
+
+        drawCentered(key.unit, font: layout.unitFont, top: layout.gaugeBaselineTop - radius * 0.78)
+        drawCentered(key.display, font: layout.speedFont, top: layout.gaugeBaselineTop - radius * 0.57)
+        let maximum = key.unit == "mph" ? "150" : "240"
+        let scaleTop = layout.gaugeBaselineTop - Self.lineHeight(layout.smallFont) * 0.55
+        drawLine("0", font: layout.smallFont, color: white, x: center.x - radius - p * 0.1, top: scaleTop)
+        drawLine(maximum, font: layout.smallFont, color: white,
+                 x: center.x + radius - Self.width(maximum, font: layout.smallFont) + p * 0.1, top: scaleTop)
 
         // GPS indicator: signal bars + label.
         let small = layout.smallFont
@@ -200,8 +243,9 @@ final class OverlayRenderer: @unchecked Sendable {
         case .noFix: (barColor, filled) = (CGColor(red: 1, green: 0.27, blue: 0.23, alpha: 1), 0)
         case .off: (barColor, filled) = (CGColor(gray: 0.6, alpha: 1), 0)
         }
+        let footerTop = layout.gaugeBaselineTop + p * 0.7
         let lineH = Self.lineHeight(small)
-        let barBottom = size.height - top - lineH + CTFontGetDescent(small) + lineH * 0.1
+        let barBottom = size.height - footerTop - lineH + CTFontGetDescent(small) + lineH * 0.1
         let barW = bars.width / 7
         for i in 0..<4 {
             let h = bars.height * CGFloat(i + 1) / 4
@@ -223,8 +267,8 @@ final class OverlayRenderer: @unchecked Sendable {
             ctx.strokePath()
         }
         let labelColor = key.gps == .good ? white : barColor
-        drawLine(OverlayFormat.gpsLabel(key.gps), font: small, color: labelColor, x: p + bars.width + p * 0.4)
-        drawLine(key.timestamp, font: small, color: white, x: p)
+        drawLine(OverlayFormat.gpsLabel(key.gps), font: small, color: labelColor, x: p + bars.width + p * 0.4, top: footerTop)
+        drawLine(key.timestamp, font: small, color: white, x: p, top: footerTop + lineH)
         return ctx.makeImage()!
     }
 

@@ -68,5 +68,9 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-073 Script: validate both catalogs — every key has `en` and `pt-BR` values, none stale/missing; grep sources for hard-coded user-facing literals; check built app has `pt-BR.lproj/InfoPlist.strings` with the 4 keys. · US-13 · AC-131, AC-132
 - [x] T-074 Manual check: launch in pt-BR on a fresh simulator, confirm each permission prompt text is Portuguese (screenshot). · US-13 · AC-131
 
-## Phase 8 — Audit
-- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-133 maps to ≥ 1 automated test or a documented device/manual check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all
+## Phase 8 — Gauge visual refresh
+- [x] T-090 Test: assert AC-134 scale labels, center speed/unit, and purple/blue gauge pixels in the rendered overlay.
+- [x] T-091 Implement the semicircular gauge while retaining GPS/timestamp, corner placement, orientation and preview/video parity. Refresh the sample frame if needed.
+
+## Phase 9 — Audit
+- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-134 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all
