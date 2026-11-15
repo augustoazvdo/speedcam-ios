@@ -5,13 +5,10 @@ import XCTest
 final class OverlayRendererTests: XCTestCase {
     private let renderer = OverlayRenderer()
     private let gray = (64.0 / 255, 64.0 / 255, 64.0 / 255)
-    private let date = Date(timeIntervalSince1970: 1_794_573_360) // 2026-11-13 12:36:00 UTC
-    private let utc = TimeZone(identifier: "UTC")!
-
     private func model(_ value: Int? = 50, unit: SpeedUnit = .kmh, gps: GPSStatus = .good,
                        orientation: CaptureOrientation = .landscapeRight, corner: OverlayCorner = .bottomLeft) -> OverlayModel {
-        OverlayModel(reading: SpeedReading(value: value, unit: unit, gps: gps), date: date,
-                     orientation: orientation, corner: corner, locale: Locale(identifier: "en_US"), timeZone: utc)
+        OverlayModel(reading: SpeedReading(value: value, unit: unit, gps: gps),
+                     orientation: orientation, corner: corner, locale: Locale(identifier: "en_US"))
     }
 
     private func renderUpright(_ model: OverlayModel, gray level: UInt8 = 64) throws -> Bitmap {
@@ -39,7 +36,7 @@ final class OverlayRendererTests: XCTestCase {
         XCTAssertLessThan(bitmap.nonBackgroundFraction(in: cornerRect(.topRight, in: CGSize(width: 1920, height: 1080)), background: gray), 0.001)
     }
 
-    // AC-030: speed number, unit, GPS indicator and timestamp are in the pixels (OCR).
+    // AC-030: only speed and unit are burned into the pixels (OCR).
     func test_AC030_overlayTextIsRecognizable() throws {
         let m = model()
         let input = TestImages.solidBuffer()
@@ -53,9 +50,22 @@ final class OverlayRendererTests: XCTestCase {
                                                                       uprightSize: CGSize(width: 1920, height: 1080))).joined(separator: " ")
         XCTAssertTrue(mph.contains("mph"), mph)
         XCTAssertTrue(mph.contains("150"), mph)
-        XCTAssertTrue(text.contains("GPS"), text)
-        XCTAssertTrue(text.contains("13/11/2026"), text)
-        XCTAssertTrue(text.contains("12:36:00"), text)
+        XCTAssertFalse(text.contains("GPS"), text)
+        XCTAssertFalse(text.contains("13/11/2026"), text)
+        XCTAssertFalse(text.contains("12:36:00"), text)
+    }
+
+    // AC-135: GPS status and date changes never add overlay text or change the gauge image.
+    func test_AC135_overlayContainsOnlyTheSpeedometer() throws {
+        let size = CGSize(width: 1920, height: 1080)
+        let first = renderer.overlayImage(for: model(), uprightSize: size)
+        let second = renderer.overlayImage(for: model(gps: .off), uprightSize: size)
+        XCTAssertTrue(first === second)
+        let text = try TestImages.recognizedText(first).joined(separator: " ")
+        XCTAssertTrue(text.contains("50"), text)
+        XCTAssertTrue(text.contains("km/h"), text)
+        XCTAssertFalse(text.contains("GPS"), text)
+        XCTAssertFalse(text.contains("15/11/2026"), text)
     }
 
     // AC-134: the speed display is a purple-to-blue semicircular gauge with a labeled scale.
@@ -96,15 +106,6 @@ final class OverlayRendererTests: XCTestCase {
         XCTAssertGreaterThan(white, 100, "\"--\" not drawn")
         let fifty = Bitmap(cgImage: renderer.overlayImage(for: model(50, unit: .mph, gps: .noFix), uprightSize: size))
         XCTAssertNotEqual(dashes.bytes, fifty.bytes)
-    }
-
-    // AC-041 / AC-042 / AC-005: each GPS state draws a distinct indicator.
-    func test_AC041_gpsStatesRenderDifferently() throws {
-        var images: [GPSStatus: [UInt8]] = [:]
-        for gps in [GPSStatus.good, .weak, .noFix, .off] {
-            images[gps] = Bitmap(cgImage: renderer.overlayImage(for: model(nil, gps: gps), uprightSize: CGSize(width: 1920, height: 1080))).bytes
-        }
-        XCTAssertEqual(Set(images.values.map { $0.hashValue }).count, 4)
     }
 
     // AC-034: semi-opaque plate keeps text contrast on bright and dark scenes.
@@ -181,13 +182,6 @@ final class OverlayRendererTests: XCTestCase {
         XCTAssertEqual(CaptureOrientation.portrait.trackTransform(bufferSize: size), CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 1080, ty: 0))
         XCTAssertEqual(CaptureOrientation.landscapeLeft.trackTransform(bufferSize: size), CGAffineTransform(a: -1, b: 0, c: 0, d: -1, tx: 1920, ty: 1080))
         XCTAssertEqual(CaptureOrientation.portrait.uprightSize(for: size), CGSize(width: 1080, height: 1920))
-    }
-
-    // AC-030 / AC-133: dd/MM/yyyy HH:mm:ss in device local time (ASM-016).
-    func test_AC133_timestampFormatPtBR() {
-        let saoPaulo = TimeZone(identifier: "America/Sao_Paulo")!
-        XCTAssertEqual(OverlayFormat.timestamp(date, timeZone: saoPaulo, locale: Locale(identifier: "pt_BR")), "13/11/2026 09:36:00")
-        XCTAssertEqual(OverlayFormat.timestamp(date, timeZone: utc, locale: Locale(identifier: "en_US")), "13/11/2026 12:36:00")
     }
 
     // AC-133: unit label stays "km/h"/"mph" in pt-BR.

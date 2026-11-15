@@ -37,7 +37,8 @@ final class AutoRecordUITests: XCTestCase {
         let recognized = (request.results ?? []).compactMap { $0.topCandidates(1).first?.string.lowercased() }
         XCTAssertTrue(recognized.contains { $0.contains("50") }, "overlay speed missing: \(recognized)")
         XCTAssertTrue(recognized.contains { $0.contains("km/h") || $0.contains("kmh") }, "overlay unit missing: \(recognized)")
-        XCTAssertTrue(recognized.contains { $0.contains("gps") }, "GPS indicator missing: \(recognized)")
+        // AC-135: GPS status is app UI/accessibility state, never burned into the speed gauge.
+        XCTAssertFalse(recognized.contains { $0.contains("gps") }, "unexpected extra overlay text: \(recognized)")
 
         // Compare the bottom-left overlay region against a flat patch away from the plate.
         let left = try XCTUnwrap(frame.cropping(to: CGRect(x: 0, y: 0, width: frame.width / 2, height: frame.height / 2)))
