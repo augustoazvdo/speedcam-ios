@@ -5,9 +5,9 @@ final class LocalizationUITests: XCTestCase {
     // AC-130 / AC-132
     func test_AC130_ptBR_localizesCameraSettingsAndSavedToast() {
         let app = UIArgs.launch(language: ["-AppleLanguages", "(pt-BR)", "-AppleLocale", "pt_BR"])
-        XCTAssertTrue(app.text("Nenhum clipe ainda").waitForExistence(timeout: 8))
+        XCTAssertTrue(app.text("Ainda não há clipes").waitForExistence(timeout: 8))
         app.waitFor("settings.button").tap()
-        XCTAssertTrue(app.text("Configurações").waitForExistence(timeout: 4))
+        XCTAssertTrue(app.text("Ajustes").waitForExistence(timeout: 4))
         app.element("settings.done").tap()
         app.waitFor("record.button").tap()
         _ = app.waitFor("recording.indicator")
@@ -39,7 +39,7 @@ final class LocalizationUITests: XCTestCase {
         _ = app.waitFor("recording.indicator")
         app.element("record.button").tap()
         XCTAssertTrue(app.text("Não foi possível salvar em Fotos — o clipe foi mantido neste iPhone").waitForExistence(timeout: 8))
-        XCTAssertTrue(app.text("OK").exists)
-        XCTAssertFalse(app.text("Open Settings").exists)
+        XCTAssertEqual(app.element("notice").buttons.count, 1)
+        XCTAssertEqual(app.element("notice.action").label, "Tentar novamente")
     }
 }

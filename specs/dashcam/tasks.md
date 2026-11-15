@@ -52,8 +52,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-055 Implement orientation handling (UI rotation, lock at record start). · US-06 · AC-050–AC-052
 - [x] T-056 UI tests: settings sheet corner picker moves preview overlay + haptic; persists after relaunch; disabled with hint while recording. · US-12 · AC-121, AC-123, AC-124
 - [x] T-057 Implement corner picker in settings sheet. · US-12 · AC-121, AC-124
-- [ ] T-058 UI tests with `-AppleLanguages (pt-BR)` and `(en)` (and `(fr)` fallback): key screens, toasts, errors show expected language. · US-13 · AC-130
-- [ ] T-059 Localize all UI strings via `Localizable.xcstrings`. · US-13 · AC-130, AC-132
+- [x] T-058 UI tests with `-AppleLanguages (pt-BR)` and `(en)` (and `(fr)` fallback): key screens, toasts, errors show expected language. · US-13 · AC-130
+- [x] T-059 Localize all UI strings via `Localizable.xcstrings`. · US-13 · AC-130, AC-132
 
 ## Phase 6 — End-to-end on Simulator
 - [ ] T-060 UI/E2E test: launch with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath … -SpeedCamSyntheticCamera YES -SpeedCamSimulatedLocation constant50kmh`; assert export file exists, extract frame at 2 s, assert overlay pixels; save PNG as test attachment. · US-10 · AC-093, AC-094, AC-030
