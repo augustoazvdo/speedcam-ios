@@ -33,6 +33,6 @@
 ## Assumptions and remaining work
 
 - No new ASM was added in this continuation. The implementation records ASM-001–ASM-018; ASM-018 documents that the configured iOS 27.2 simulator supplies invalid speed accuracy for the requested `simctl location` route. AC-092 therefore remains unverified at 50 km/h; the app correctly shows `--` / `GPS weak` rather than fabricating a reading.
-- T-063 remains open. An iPhone 15 Pro Max is paired and available, but the device build failed because no Development Team is configured. No signed app was installed, and the 10-minute recording, dropped-frame rate, per-frame overlay, and preview latency were not measured.
+- T-063 remains open. An iPhone 15 Pro Max is paired and available, and a local Apple Development identity was found. Device signing failed because Xcode has no connected Apple Developer account for that team and no matching app provisioning profile. No signed app was installed, and the 10-minute recording, dropped-frame rate, per-frame overlay, and preview latency were not measured.
 - T-074 is complete. The fresh pt-BR simulator test captured camera, microphone, and location prompts in the xcresult. The real Photos add-only prompt was triggered by a synthetic recording and visually confirmed in Portuguese at `build/photos-permission-ptbr.png`; it was left unanswered.
 - T-062 and T-063 remain open; consequently T-080 is also open even though the traceability audit passes its coverage checks. No open spec questions remain.
