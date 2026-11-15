@@ -65,7 +65,7 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-070 Test/script: Release build — DEBUG symbols (`SyntheticFrameSource`, `SimulatedLocationProvider`, `AutoRecordRunner`) absent (`nm`/`strings`), launch args ignored. · US-11 · AC-103
 - [x] T-071 Test/script: no `URLSession`/`Network` usage in sources, no third-party packages, built Info.plist keys present and no Always/background location. · US-11 · AC-100, AC-101, AC-102, AC-105
 - [x] T-072 Secret scan of repo (`git grep -nE` for keys/tokens/p12/mobileprovision). · US-11 · AC-104
-- [ ] T-073 Script: validate both catalogs — every key has `en` and `pt-BR` values, none stale/missing; grep sources for hard-coded user-facing literals; check built app has `pt-BR.lproj/InfoPlist.strings` with the 4 keys. · US-13 · AC-131, AC-132
+- [x] T-073 Script: validate both catalogs — every key has `en` and `pt-BR` values, none stale/missing; grep sources for hard-coded user-facing literals; check built app has `pt-BR.lproj/InfoPlist.strings` with the 4 keys. · US-13 · AC-131, AC-132
 - [ ] T-074 Manual check: launch in pt-BR on a fresh simulator, confirm each permission prompt text is Portuguese (screenshot). · US-13 · AC-131
 
 ## Phase 8 — Audit
