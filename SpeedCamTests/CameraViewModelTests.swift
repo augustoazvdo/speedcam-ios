@@ -3,6 +3,14 @@ import XCTest
 @testable import SpeedCam
 
 #if DEBUG
+private final class FakeCameraZoom: CameraZoomControlling, @unchecked Sendable {
+    let zoomOptions: [CameraZoomOption]
+    private(set) var selectedFactor: CGFloat?
+
+    init(options: [CameraZoomOption]) { zoomOptions = options }
+    func selectZoom(factor: CGFloat) { selectedFactor = factor }
+}
+
 @MainActor
 final class CameraViewModelTests: XCTestCase {
     private var permissions: FakePermissions!
@@ -43,7 +51,8 @@ final class CameraViewModelTests: XCTestCase {
         try? FileManager.default.removeItem(at: root)
     }
 
-    private func makeVM(onboarded: Bool = true, useRealSaveService: Bool = false) -> CameraViewModel {
+    private func makeVM(onboarded: Bool = true, useRealSaveService: Bool = false,
+                        cameraZoom: CameraZoomControlling? = nil) -> CameraViewModel {
         settings.onboardingCompleted = onboarded
         let saveService = ClipSaveService(store: store, saver: photos)
         let saver: ClipSaving = useRealSaveService ? saveService : clipSaver
@@ -52,11 +61,25 @@ final class CameraViewModelTests: XCTestCase {
         return CameraViewModel(permissions: permissions, opener: opener, location: location, engine: engine,
                                coordinator: coordinator, saveService: saveService, settings: settings, overlay: overlay,
                                haptics: haptics, thermal: thermal, clock: clock, cameraAvailable: true,
+                               cameraZoom: cameraZoom,
                                speedTickInterval: nil)
     }
 
     private func record(_ vm: CameraViewModel) async {
         await vm.tapRecordAsync()
+    }
+
+    // AC-136
+    func test_AC136_selectingAvailableZoomUpdatesCaptureAndSelectionFeedback() {
+        let option = CameraZoomOption(factor: 2, label: "2×")
+        let zoom = FakeCameraZoom(options: [CameraZoomOption(factor: 1, label: "1×"), option])
+        let vm = makeVM(cameraZoom: zoom)
+
+        vm.selectCameraZoom(option)
+
+        XCTAssertEqual(vm.selectedCameraZoom, 2)
+        XCTAssertEqual(zoom.selectedFactor, 2)
+        XCTAssertEqual(haptics.events, ["selection"])
     }
 
     // AC-001

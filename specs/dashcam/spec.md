@@ -135,6 +135,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-133** Given the device locale is pt-BR, When the speedometer and timer are rendered, Then the unit label stays "km/h" / "mph" and numbers use locale formatting; the speedometer has no date/time text.
 - **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc and radial tick marks; numeric endpoint labels are omitted.
 - **AC-135** Given GPS status or the current date/time changes, When the speedometer is rendered, Then its image contains only the gauge, speed number and unit; GPS status and date/time add no text or graphics.
+- **AC-136** Given a supported rear camera exposes multiple native zoom/lens stops, When the preview is shown, Then SpeedCam shows one selectable button per available stop using the device's displayed zoom factors, and selecting one changes the live capture zoom. Stops are derived from the active AVFoundation camera capabilities; unavailable factors are never offered.
 
 ### Premium feel (cross-cutting)
 
@@ -146,7 +147,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 ## 4. Assumptions
 
 - **ASM-001** Speed source is `CLLocation.speed` (m/s) from CoreLocation with `kCLLocationAccuracyBestForNavigation`; no OBD/Bluetooth integration.
-- **ASM-002** Back wide camera only; 1080p @ 30 fps default, HEVC if supported else H.264, `.mov` container.
+- **ASM-002** Rear camera only: prefer the device's virtual multi-camera (triple, dual-wide or dual), falling back to rear wide-angle when needed; default to 1080p @ 30 fps, HEVC if supported else H.264, `.mov` container. Zoom choices use AVFoundation-reported range and virtual-camera switch-over points (AC-136).
 - **ASM-003** Overlay layout: semicircular speed gauge with the unit above the centered speed, purple-to-blue arc and radial ticks without numeric endpoint labels; no GPS status or date/time; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
 - **ASM-004** (retired by AC-135) The speedometer does not burn a timestamp into the video.
 - **ASM-005** Recording is foreground-only; backgrounding stops and saves the clip (no background recording, which iOS does not permit for camera).
@@ -164,6 +165,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **ASM-017** (added during implementation) AC-010 (aspect-fill, full screen) and AC-011 (overlay in the same position as in the file) conflict when the preview runs under the control bar: the plate in a bottom corner was cropped and hidden behind the controls. The preview therefore fills the whole camera area, aspect-fill with no letterbox bars, edge to edge and under the status area, but stops at the opaque control bar (bottom in portrait, trailing edge in landscape). The aspect ratio of that area is close to the 16:9 frame, so the plate is fully visible in every orientation.
 - **ASM-018** (added during implementation) On the configured iOS 27.2 Simulator, `simctl location start --speed=14` emits fixes whose speed accuracy is invalid, so AC-041 correctly requires `--` / `GPS weak`; waiting longer does not make it valid. The built-in `Freeway Drive` scenario yields a valid speed but not a controllable 50 km/h value. Keep AC-041's filter; the AC-092 speed match remains unverified on Simulator and needs a simulator/runtime that supplies valid speed accuracy or a physical device.
 - **ASM-019** (retired by the requested label removal) The numeric endpoint values from the reference are not shown; only the unlabeled radial ticks remain.
+- **ASM-020** AVFoundation exposes available zoom ranges and virtual-camera lens-switch thresholds, but does not expose the native Camera app's complete preset list (including sensor crop presets). SpeedCam will show the supported minimum, 1× when in range, and AVFoundation-reported virtual-device switch-over stops. On iOS 18+, labels use the device's display zoom multiplier; on iOS 17, they use the AVFoundation factor directly. The exact preset list can therefore differ from Camera.app on some models.
 
 ## 5. Questions (all resolved 2026-11-13 by Augusto)
 
