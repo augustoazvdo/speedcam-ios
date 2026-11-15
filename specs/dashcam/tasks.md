@@ -69,10 +69,12 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-074 Manual check: launch in pt-BR on a fresh simulator, confirm each permission prompt text is Portuguese (screenshot). · US-13 · AC-131
 
 ## Phase 8 — Gauge visual refresh
-- [x] T-090 Test: assert AC-134 scale labels, center speed/unit, and purple/blue gauge pixels in the rendered overlay.
+- [x] T-090 Test: assert AC-134 center speed/unit and purple/blue gauge pixels in the rendered overlay.
 - [x] T-091 Implement the semicircular gauge, corner placement, orientation and preview/video parity. Refresh the sample frame if needed.
 - [x] T-092 Tests first: AC-135 verifies GPS/date changes add no image text or graphics; update the saved-frame UI test to assert no GPS label.
 - [x] T-093 Remove GPS/date from `OverlayRenderer` and its cache key/model snapshot; preserve GPS status in app status/accessibility UI. Refresh the sample frame.
+- [x] T-094 Test first: AC-134 verifies the gauge has no numeric scale endpoint labels in km/h or mph.
+- [x] T-095 Remove the `0`/`240` and `0`/`150` endpoint labels and update the sample frame.
 
 ## Phase 9 — Audit
 - [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-135 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all

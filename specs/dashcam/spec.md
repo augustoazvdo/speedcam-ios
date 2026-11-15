@@ -133,8 +133,8 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-131** Given the device language is pt-BR or English, When each system permission prompt appears, Then the camera, microphone, location and Photos usage strings are shown in that language (localized via `InfoPlist.xcstrings`).
 - **AC-132** Given the repository, When `Localizable.xcstrings` and `InfoPlist.xcstrings` are inspected, Then every key has a translated, non-stale value for both `en` and `pt-BR`, and no user-facing string in code is a hard-coded literal outside the catalog.
 - **AC-133** Given the device locale is pt-BR, When the speedometer and timer are rendered, Then the unit label stays "km/h" / "mph" and numbers use locale formatting; the speedometer has no date/time text.
-- **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc, radial tick marks and endpoint labels `0` and `240` for km/h (`0` and `150` for mph).
-- **AC-135** Given GPS status or the current date/time changes, When the speedometer is rendered, Then its image contains only the gauge, endpoint scale labels, speed number and unit; GPS status and date/time add no text or graphics.
+- **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc and radial tick marks; numeric endpoint labels are omitted.
+- **AC-135** Given GPS status or the current date/time changes, When the speedometer is rendered, Then its image contains only the gauge, speed number and unit; GPS status and date/time add no text or graphics.
 
 ### Premium feel (cross-cutting)
 
@@ -147,7 +147,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 - **ASM-001** Speed source is `CLLocation.speed` (m/s) from CoreLocation with `kCLLocationAccuracyBestForNavigation`; no OBD/Bluetooth integration.
 - **ASM-002** Back wide camera only; 1080p @ 30 fps default, HEVC if supported else H.264, `.mov` container.
-- **ASM-003** Overlay layout: semicircular speed gauge with the unit above the centered speed, purple-to-blue arc, radial ticks and labeled endpoints; no GPS status or date/time; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
+- **ASM-003** Overlay layout: semicircular speed gauge with the unit above the centered speed, purple-to-blue arc and radial ticks without numeric endpoint labels; no GPS status or date/time; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
 - **ASM-004** (retired by AC-135) The speedometer does not burn a timestamp into the video.
 - **ASM-005** Recording is foreground-only; backgrounding stops and saves the clip (no background recording, which iOS does not permit for camera).
 - **ASM-006** Smoothing: exponential moving average (α ≈ 0.5 at 1 Hz) on valid samples; accuracy thresholds 50 m horizontal and 5 m/s speed accuracy; 3 s staleness timeout; < 2 km/h shown as 0.
@@ -163,7 +163,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **ASM-016** (retired by AC-135) The earlier overlay included a device-local timestamp; the requested gauge-only style removes it from the saved pixels.
 - **ASM-017** (added during implementation) AC-010 (aspect-fill, full screen) and AC-011 (overlay in the same position as in the file) conflict when the preview runs under the control bar: the plate in a bottom corner was cropped and hidden behind the controls. The preview therefore fills the whole camera area, aspect-fill with no letterbox bars, edge to edge and under the status area, but stops at the opaque control bar (bottom in portrait, trailing edge in landscape). The aspect ratio of that area is close to the 16:9 frame, so the plate is fully visible in every orientation.
 - **ASM-018** (added during implementation) On the configured iOS 27.2 Simulator, `simctl location start --speed=14` emits fixes whose speed accuracy is invalid, so AC-041 correctly requires `--` / `GPS weak`; waiting longer does not make it valid. The built-in `Freeway Drive` scenario yields a valid speed but not a controllable 50 km/h value. Keep AC-041's filter; the AC-092 speed match remains unverified on Simulator and needs a simulator/runtime that supplies valid speed accuracy or a physical device.
-- **ASM-019** (added for the requested visual refresh) The supplied reference shows a `0`–`240` scale but does not specify units or mph behavior. Keep `0`–`240` for km/h and use `0`–`150` for mph.
+- **ASM-019** (retired by the requested label removal) The numeric endpoint values from the reference are not shown; only the unlabeled radial ticks remain.
 
 ## 5. Questions (all resolved 2026-11-13 by Augusto)
 

@@ -99,7 +99,6 @@ final class OverlayRenderer: @unchecked Sendable {
         let gaugeBaselineTop: CGFloat
         let speedFont: CTFont
         let unitFont: CTFont
-        let smallFont: CTFont
     }
 
     private func layout(shortSide: Int) -> Layout {
@@ -109,17 +108,16 @@ final class OverlayRenderer: @unchecked Sendable {
         let s = CGFloat(shortSide)
         let speedFont = Self.font(size: (0.105 * s).rounded(), weight: .heavy, rounded: true)
         let unitFont = Self.font(size: (0.038 * s).rounded(), weight: .semibold, rounded: true)
-        let smallFont = Self.font(size: (0.026 * s).rounded(), weight: .medium, rounded: false)
         let padding = (0.03 * s).rounded()
         let contentWidth = max(Self.width("888", font: speedFont), s * 0.36)
         let width = (contentWidth + padding * 2).rounded(.up)
         let radius = min((width - padding * 2) * 0.48, s * 0.235)
         let baselineTop = radius + padding * 1.55
-        let height = baselineTop + Self.lineHeight(smallFont) * 0.45 + padding * 0.75
+        let height = baselineTop + padding * 0.75
         let layout = Layout(margin: (0.04 * s).rounded(), padding: padding,
                             plateSize: CGSize(width: width, height: height.rounded(.up)),
                             gaugeRadius: radius, gaugeBaselineTop: baselineTop,
-                            speedFont: speedFont, unitFont: unitFont, smallFont: smallFont)
+                            speedFont: speedFont, unitFont: unitFont)
         layouts[shortSide] = layout
         return layout
     }
@@ -219,11 +217,6 @@ final class OverlayRenderer: @unchecked Sendable {
 
         drawCentered(key.unit, font: layout.unitFont, top: layout.gaugeBaselineTop - radius * 0.78)
         drawCentered(key.display, font: layout.speedFont, top: layout.gaugeBaselineTop - radius * 0.57)
-        let maximum = key.unit == "mph" ? "150" : "240"
-        let scaleTop = layout.gaugeBaselineTop - Self.lineHeight(layout.smallFont) * 0.55
-        drawLine("0", font: layout.smallFont, color: white, x: center.x - radius - p * 0.1, top: scaleTop)
-        drawLine(maximum, font: layout.smallFont, color: white,
-                 x: center.x + radius - Self.width(maximum, font: layout.smallFont) + p * 0.1, top: scaleTop)
 
         return ctx.makeImage()!
     }
