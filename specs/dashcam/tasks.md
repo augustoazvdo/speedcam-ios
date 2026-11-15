@@ -50,8 +50,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-053 Implement `IdleTimerController`. · US-03 · AC-022
 - [x] T-054 UI tests in portrait + landscape left/right: controls same order/style, no mid-clip rotation of file. · US-06 · AC-051, AC-052, AC-112
 - [x] T-055 Implement orientation handling (UI rotation, lock at record start). · US-06 · AC-050–AC-052
-- [ ] T-056 UI tests: settings sheet corner picker moves preview overlay + haptic; persists after relaunch; disabled with hint while recording. · US-12 · AC-121, AC-123, AC-124
-- [ ] T-057 Implement corner picker in settings sheet. · US-12 · AC-121, AC-124
+- [x] T-056 UI tests: settings sheet corner picker moves preview overlay + haptic; persists after relaunch; disabled with hint while recording. · US-12 · AC-121, AC-123, AC-124
+- [x] T-057 Implement corner picker in settings sheet. · US-12 · AC-121, AC-124
 - [ ] T-058 UI tests with `-AppleLanguages (pt-BR)` and `(en)` (and `(fr)` fallback): key screens, toasts, errors show expected language. · US-13 · AC-130
 - [ ] T-059 Localize all UI strings via `Localizable.xcstrings`. · US-13 · AC-130, AC-132
 
