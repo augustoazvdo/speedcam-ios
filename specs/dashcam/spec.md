@@ -8,7 +8,7 @@
 
 ## 1. Summary
 
-SpeedCam records video like the native Camera app. A speedometer overlay (GPS speed, unit, GPS-signal indicator, date/time) is composited into every video frame in real time, so the overlay is part of the saved file and visible anywhere the clip is shared. Built for drivers with the phone in a car mount (usually landscape). Default unit is km/h with an mph toggle.
+SpeedCam records video like the native Camera app. A speedometer overlay (GPS speed and unit only) is composited into every video frame in real time, so the overlay is part of the saved file and visible anywhere the clip is shared. Built for drivers with the phone in a car mount (usually landscape). Default unit is km/h with an mph toggle.
 
 Out of scope for v1: loop recording / segmenting / auto-delete (Q-001), GPS coordinates, heading or street name in the overlay (Q-002), in-app clip library (Q-004), speed-limit / over-speed warning (Q-006), crash (g-sensor) detection, maps/route overlay, cloud upload, editing, photo capture, front camera, Apple Watch, CarPlay.
 
@@ -17,7 +17,7 @@ Out of scope for v1: loop recording / segmenting / auto-delete (Q-001), GPS coor
 - **US-01 Permissions.** As a driver opening SpeedCam for the first time, I want to understand and grant the permissions it needs, and recover easily if I denied one, so I can start recording.
 - **US-02 Live preview.** As a driver, I want a full-screen camera preview with the speedometer shown live, so I can see exactly what will be recorded.
 - **US-03 Record.** As a driver, I want to start and stop recording with one tap and always know whether I am recording.
-- **US-04 Burned-in overlay.** As a driver, I want speed, unit, GPS status and timestamp burned into the video file, so anyone I share the clip with sees them.
+- **US-04 Burned-in overlay.** As a driver, I want speed and unit shown in a clear speedometer burned into the video file, so anyone I share the clip with sees them.
 - **US-05 Honest speed.** As a driver, I want the speed to be smooth and truthful, showing "--" when GPS can't give a reliable value instead of a made-up number.
 - **US-06 Orientation.** As a driver, I want recording to work in portrait and landscape with the overlay upright and readable in the saved video.
 - **US-07 Save & review.** As a driver, I want clips saved to Photos automatically when I stop, with confirmation and a quick way to open the last clip.
@@ -38,7 +38,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-002** Given the onboarding screen, When the user taps "Continue", Then system prompts for camera, microphone, location When In Use, and photo-library add-only are shown one after another, and the app never requests "Always" location or full photo-library read access.
 - **AC-003** Given camera permission is denied, When the main screen is shown, Then the preview area shows a designed denied state ("Camera access is off. SpeedCam needs it to record.") with one "Open Settings" button that opens the app's page in iOS Settings, and the record button is disabled.
 - **AC-004** Given microphone permission is denied and camera is granted, When the user records, Then recording works without audio and a persistent badge "No audio — Mic off" is shown; tapping it offers "Open Settings".
-- **AC-005** Given location permission is denied, When the main screen is shown, Then the overlay shows "--" with a "GPS off" indicator, recording is still allowed, and a banner "Location is off — speed won't be recorded" offers "Open Settings".
+- **AC-005** Given location permission is denied, When the main screen is shown, Then the speedometer shows "--", recording is still allowed, and a banner "Location is off — speed won't be recorded" offers "Open Settings".
 - **AC-006** Given Photos add permission is denied, When a recording stops, Then the clip is kept in the app's local storage, and a message "Couldn't save to Photos — access is off" offers "Open Settings"; after access is granted and the app returns to the foreground, pending clips are saved to Photos automatically and confirmation is shown.
 - **AC-007** Given the user returns from iOS Settings after granting a previously denied permission, When the app becomes active, Then the related denied state disappears without restarting the app.
 
@@ -57,7 +57,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 ### US-04 Burned-in overlay
 
-- **AC-030** Given a recording made with a known speed, When a frame is extracted from the saved file (ffmpeg or AVAssetImageGenerator), Then the frame shows the speed number, the unit ("km/h" or "mph"), a GPS signal indicator and the date/time (device local time, `dd/MM/yyyy HH:mm:ss` per locale default) rendered in the pixels.
+- **AC-030** Given a recording made with a known speed, When a frame is extracted from the saved file (ffmpeg or AVAssetImageGenerator), Then the frame shows only the speedometer with the speed number and unit ("km/h" or "mph"); GPS status and date/time are not burned into the frame.
 - **AC-031** Given a recording, When the file is inspected, Then it contains one H.264 or HEVC video track at the capture resolution (1080p default) at ~30 fps and, if the mic is granted, one AAC audio track in sync with video (offset ≤ 100 ms).
 - **AC-032** Given the speed changes during recording, When frames from different times are extracted, Then the overlay values in the frames match the speed reported at those times (within one smoothing window, ≤ 1 s lag).
 - **AC-033** Given a 10-minute recording on a supported device, When the file is inspected, Then no more than 1% of expected frames are dropped and the overlay is present on every frame.
@@ -66,8 +66,8 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 ### US-05 Speed accuracy
 
 - **AC-040** Given CLLocation reports speed −1 (invalid), When the overlay updates, Then it shows "--" (not 0 and not the last value after 3 s of invalid data).
-- **AC-041** Given location updates with `horizontalAccuracy` > 50 m or `speedAccuracy` invalid/ > 5 m/s, When the overlay updates, Then it shows "--" and the GPS indicator shows "weak".
-- **AC-042** Given no valid location update for more than 3 s, When the overlay updates, Then it shows "--" and the GPS indicator shows "no fix".
+- **AC-041** Given location updates with `horizontalAccuracy` > 50 m or `speedAccuracy` invalid/ > 5 m/s, When the speedometer updates, Then it shows "--"; the GPS indicator shows "weak" in the app's status/accessibility text, outside the burned-in speedometer.
+- **AC-042** Given no valid location update for more than 3 s, When the speedometer updates, Then it shows "--"; the GPS indicator shows "no fix" in the app's status/accessibility text, outside the burned-in speedometer.
 - **AC-043** Given a sequence of valid speeds with noise, When displayed, Then the value is smoothed (no jumps greater than the true change plus 3 km/h between consecutive displayed values at 1 Hz input) and rounded to a whole number.
 - **AC-044** Given valid speed below 2 km/h, When displayed, Then it shows "0" (stationary jitter suppressed).
 - **AC-045** Given the unit is km/h, When the speed is 13.89 m/s, Then the overlay shows "50"; Given mph, Then it shows "31".
@@ -91,7 +91,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-072** Given recording is in progress, When a phone call or other audio/camera interruption begins, Then the clip so far is finalized as a playable file and saved, and on return the app shows "Recording stopped by a call — clip saved".
 - **AC-073** Given recording is in progress, When the app goes to the background, Then the clip so far is finalized as a playable file and saved, and on return the app shows "Recording stopped when the app closed — clip saved".
 - **AC-074** Given recording is in progress, When camera or location permission is revoked in Settings, Then camera revocation stops and saves the clip with an explanation and "Open Settings"; location revocation continues recording with "--" and the GPS-off banner.
-- **AC-075** Given no GPS fix, When recording, Then recording proceeds with "--" and "no fix" in overlay; no blocking alert is shown.
+- **AC-075** Given no GPS fix, When recording, Then recording proceeds with "--" in the speedometer and the app shows its non-blocking no-fix status; no blocking alert is shown.
 - **AC-076** Given recording, When thermal state becomes `.serious`, Then a warning "Phone is hot — recording may stop" is shown; When `.critical`, Then the clip is finalized and saved with "Recording stopped — phone too hot".
 - **AC-077** Given the app was killed or crashed mid-recording, When it is relaunched, Then any partially written clip that is playable is recovered to Photos (or reported as unrecoverable) and the user is told the outcome.
 - **AC-078** Given any failure, When the app shows the error, Then the message names the specific cause and offers exactly one primary action.
@@ -104,7 +104,7 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 ### US-10 Testability
 
-- **AC-090** Given a Debug build launched with `-SpeedCamSyntheticCamera YES` (or on a Simulator with no camera), When the main screen is shown, Then a synthetic frame source supplies moving test frames (gradient + frame counter + clock) at 30 fps in place of the camera and the full overlay is shown.
+- **AC-090** Given a Debug build launched with `-SpeedCamSyntheticCamera YES` (or on a Simulator with no camera), When the main screen is shown, Then a synthetic frame source supplies moving test frames (gradient + frame counter + clock) at 30 fps in place of the camera and the speedometer gauge is shown.
 - **AC-091** Given a Debug build launched with `-SpeedCamSimulatedLocation <scenario>` (e.g. `constant50kmh`, `accelerate`, `invalid`, `noFix`), When recording, Then speeds follow the scenario deterministically.
 - **AC-092** Given the Simulator with the CoreLocation provider, When `xcrun simctl location <device> start …` drives a route, Then the overlay shows a speed matching the route.
 - **AC-093** Given a Debug build launched with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath <dir>` plus synthetic camera and simulated location, When launched on the Simulator, Then the app records 5 s and writes a playable `.mov` to the export directory (and logs its path); a frame extracted from it with ffmpeg or AVAssetImageGenerator visibly shows the overlay with the scenario speed.
@@ -132,8 +132,9 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-130** Given the device language is Portuguese (Brazil), When any screen, banner, toast or error is shown, Then all user-facing text is in pt-BR (e.g. "✓ Salvo em Fotos"); Given English, Then it is in English; Given any other language, Then it is in English.
 - **AC-131** Given the device language is pt-BR or English, When each system permission prompt appears, Then the camera, microphone, location and Photos usage strings are shown in that language (localized via `InfoPlist.xcstrings`).
 - **AC-132** Given the repository, When `Localizable.xcstrings` and `InfoPlist.xcstrings` are inspected, Then every key has a translated, non-stale value for both `en` and `pt-BR`, and no user-facing string in code is a hard-coded literal outside the catalog.
-- **AC-133** Given the device locale is pt-BR, When the overlay and timer are rendered, Then the burned-in date uses `dd/MM/yyyy HH:mm:ss`, the unit label stays "km/h" / "mph", and numbers use locale formatting.
-- **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc, radial tick marks and endpoint labels `0` and `240` for km/h (`0` and `150` for mph); the GPS indicator and timestamp remain visible on the same semi-opaque plate.
+- **AC-133** Given the device locale is pt-BR, When the speedometer and timer are rendered, Then the unit label stays "km/h" / "mph" and numbers use locale formatting; the speedometer has no date/time text.
+- **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc, radial tick marks and endpoint labels `0` and `240` for km/h (`0` and `150` for mph).
+- **AC-135** Given GPS status or the current date/time changes, When the speedometer is rendered, Then its image contains only the gauge, endpoint scale labels, speed number and unit; GPS status and date/time add no text or graphics.
 
 ### Premium feel (cross-cutting)
 
@@ -146,8 +147,8 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 
 - **ASM-001** Speed source is `CLLocation.speed` (m/s) from CoreLocation with `kCLLocationAccuracyBestForNavigation`; no OBD/Bluetooth integration.
 - **ASM-002** Back wide camera only; 1080p @ 30 fps default, HEVC if supported else H.264, `.mov` container.
-- **ASM-003** Overlay layout: semicircular speed gauge with the unit above the centered speed, purple-to-blue arc, radial ticks and labeled endpoints, plus GPS indicator and date/time on a semi-opaque plate; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
-- **ASM-004** Timestamp uses device local time and locale date format (pt-BR → `dd/MM/yyyy HH:mm:ss`).
+- **ASM-003** Overlay layout: semicircular speed gauge with the unit above the centered speed, purple-to-blue arc, radial ticks and labeled endpoints; no GPS status or date/time; placed in the user-selected corner (default bottom-left, US-12) with a fixed safe margin (~4% of the short side); size and style are fixed.
+- **ASM-004** (retired by AC-135) The speedometer does not burn a timestamp into the video.
 - **ASM-005** Recording is foreground-only; backgrounding stops and saves the clip (no background recording, which iOS does not permit for camera).
 - **ASM-006** Smoothing: exponential moving average (α ≈ 0.5 at 1 Hz) on valid samples; accuracy thresholds 50 m horizontal and 5 m/s speed accuracy; 3 s staleness timeout; < 2 km/h shown as 0.
 - **ASM-007** Clips have no max length beyond storage; one continuous file per recording, no loop recording (confirmed Q-001).
@@ -159,17 +160,17 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **ASM-013** Overlay corner is locked at record start like orientation; changing it during recording applies from the next recording (preview shows the pending change with a hint).
 - **ASM-014** (added during implementation) In AC-042, a "valid location update" means any CoreLocation update with a fix (`horizontalAccuracy` ≥ 0), whatever its speed validity. A stream of fixes with invalid speed or poor accuracy therefore shows "--" with "weak" (AC-040/AC-041), and "no fix" is shown only when no fix at all has arrived for more than 3 s. Both cases show "--", so no speed value is ever fabricated (R-08). The EMA restarts after any invalid, inaccurate or stale sample.
 - **ASM-015** (added during implementation) Besides the arguments in design §6, DEBUG builds accept `-SpeedCamFakePermissions <kind=status,…>`, `-SpeedCamFakePhotos success|denied|fail` and `-SpeedCamFakeFreeMB <n>` so UI tests can drive denied, Photos-failure and low-storage states deterministically on the Simulator. They are compiled out of Release with the other hooks (R-04, AC-103).
-- **ASM-016** (added during implementation) AC-030 says "`dd/MM/yyyy HH:mm:ss` per locale default". Locale defaults differ (en-US is `MM/dd/yyyy, h:mm:ss a`), so the burned-in timestamp always uses the literal `dd/MM/yyyy HH:mm:ss` pattern in device local time, with locale digits. This matches AC-133 for pt-BR and keeps footage unambiguous (24 h, no AM/PM) in every language.
+- **ASM-016** (retired by AC-135) The earlier overlay included a device-local timestamp; the requested gauge-only style removes it from the saved pixels.
 - **ASM-017** (added during implementation) AC-010 (aspect-fill, full screen) and AC-011 (overlay in the same position as in the file) conflict when the preview runs under the control bar: the plate in a bottom corner was cropped and hidden behind the controls. The preview therefore fills the whole camera area, aspect-fill with no letterbox bars, edge to edge and under the status area, but stops at the opaque control bar (bottom in portrait, trailing edge in landscape). The aspect ratio of that area is close to the 16:9 frame, so the plate is fully visible in every orientation.
 - **ASM-018** (added during implementation) On the configured iOS 27.2 Simulator, `simctl location start --speed=14` emits fixes whose speed accuracy is invalid, so AC-041 correctly requires `--` / `GPS weak`; waiting longer does not make it valid. The built-in `Freeway Drive` scenario yields a valid speed but not a controllable 50 km/h value. Keep AC-041's filter; the AC-092 speed match remains unverified on Simulator and needs a simulator/runtime that supplies valid speed accuracy or a physical device.
-- **ASM-019** (added for the requested visual refresh) The supplied reference shows a `0`–`240` scale but does not specify units or mph behavior. Keep `0`–`240` for km/h and use `0`–`150` for mph; retain GPS status and local timestamp below the gauge so AC-030 remains satisfied.
+- **ASM-019** (added for the requested visual refresh) The supplied reference shows a `0`–`240` scale but does not specify units or mph behavior. Keep `0`–`240` for km/h and use `0`–`150` for mph.
 
 ## 5. Questions (all resolved 2026-11-13 by Augusto)
 
 No open questions remain; implementation is unblocked.
 
 - **Q-001** Loop recording? — **Resolved:** No loop recording. One continuous clip per recording (ASM-007).
-- **Q-002** Extra overlay data? — **Resolved:** Overlay shows only speed, unit, GPS status and timestamp. No coordinates, heading or street name.
+- **Q-002** Extra overlay data? — **Resolved and updated per user direction:** Show only the speedometer, speed and unit. No GPS status, timestamp, coordinates, heading or street name in the burned-in overlay.
 - **Q-003** Overlay position? — **Resolved:** User picks the corner (top-left, top-right, bottom-left, bottom-right); default bottom-left; saved, shown in the live preview and burned into the file (US-12, AC-120–AC-124).
 - **Q-004** Where clips live? — **Resolved:** Photos only. No in-app library (AC-061).
 - **Q-005** UI language? — **Resolved:** English and pt-BR at launch via String Catalog (`Localizable.xcstrings`), following the device language; Info.plist permission strings localized in both (US-13, AC-130–AC-133).

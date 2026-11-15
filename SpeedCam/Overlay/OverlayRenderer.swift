@@ -6,7 +6,7 @@ import Foundation
 import Metal
 import UIKit
 
-/// Draws the speedometer plate (ASM-003, AC-134) and composites it onto sensor-orientation frames so it is
+/// Draws the gauge-only overlay (ASM-003, AC-134) and composites it onto sensor-orientation frames so it is
 /// upright in the viewer's chosen corner after the track transform. The same output feeds the
 /// writer and the live preview, so preview == file (AC-011).
 final class OverlayRenderer: @unchecked Sendable {
@@ -111,14 +111,11 @@ final class OverlayRenderer: @unchecked Sendable {
         let unitFont = Self.font(size: (0.038 * s).rounded(), weight: .semibold, rounded: true)
         let smallFont = Self.font(size: (0.026 * s).rounded(), weight: .medium, rounded: false)
         let padding = (0.03 * s).rounded()
-        let barsWidth = Self.barsSize(font: smallFont).width + padding * 0.4
-        let gpsWidth = [GPSStatus.good, .weak, .noFix, .off]
-            .map { barsWidth + Self.width(OverlayFormat.gpsLabel($0), font: smallFont) }.max() ?? 0
-        let contentWidth = max(Self.width("00/00/0000 00:00:00", font: smallFont), gpsWidth, s * 0.36)
+        let contentWidth = max(Self.width("888", font: speedFont), s * 0.36)
         let width = (contentWidth + padding * 2).rounded(.up)
         let radius = min((width - padding * 2) * 0.48, s * 0.235)
         let baselineTop = radius + padding * 1.55
-        let height = baselineTop + Self.lineHeight(smallFont) * 2 + padding * 1.4
+        let height = baselineTop + Self.lineHeight(smallFont) * 0.45 + padding * 0.75
         let layout = Layout(margin: (0.04 * s).rounded(), padding: padding,
                             plateSize: CGSize(width: width, height: height.rounded(.up)),
                             gaugeRadius: radius, gaugeBaselineTop: baselineTop,
@@ -132,15 +129,11 @@ final class OverlayRenderer: @unchecked Sendable {
     private struct OverlayKey: Hashable {
         let display: String
         let unit: String
-        let gps: GPSStatus
-        let timestamp: String
         let shortSide: Int
     }
 
     private func key(for model: OverlayModel, uprightSize: CGSize) -> OverlayKey {
         OverlayKey(display: model.reading.display(locale: model.locale), unit: model.reading.unit.label,
-                   gps: model.reading.gps,
-                   timestamp: OverlayFormat.timestamp(model.date, timeZone: model.timeZone, locale: model.locale),
                    shortSide: Int(min(uprightSize.width, uprightSize.height)))
     }
 
@@ -232,43 +225,6 @@ final class OverlayRenderer: @unchecked Sendable {
         drawLine(maximum, font: layout.smallFont, color: white,
                  x: center.x + radius - Self.width(maximum, font: layout.smallFont) + p * 0.1, top: scaleTop)
 
-        // GPS indicator: signal bars + label.
-        let small = layout.smallFont
-        let bars = Self.barsSize(font: small)
-        let barColor: CGColor
-        let filled: Int
-        switch key.gps {
-        case .good: (barColor, filled) = (CGColor(red: 0.2, green: 0.85, blue: 0.35, alpha: 1), 4)
-        case .weak: (barColor, filled) = (CGColor(red: 1, green: 0.8, blue: 0.1, alpha: 1), 2)
-        case .noFix: (barColor, filled) = (CGColor(red: 1, green: 0.27, blue: 0.23, alpha: 1), 0)
-        case .off: (barColor, filled) = (CGColor(gray: 0.6, alpha: 1), 0)
-        }
-        let footerTop = layout.gaugeBaselineTop + p * 0.7
-        let lineH = Self.lineHeight(small)
-        let barBottom = size.height - footerTop - lineH + CTFontGetDescent(small) + lineH * 0.1
-        let barW = bars.width / 7
-        for i in 0..<4 {
-            let h = bars.height * CGFloat(i + 1) / 4
-            let rect = CGRect(x: p + CGFloat(i) * barW * 2, y: barBottom, width: barW, height: h)
-            if i < filled {
-                ctx.setFillColor(barColor)
-                ctx.fill(rect)
-            } else {
-                ctx.setStrokeColor(barColor)
-                ctx.setLineWidth(max(1, barW * 0.25))
-                ctx.stroke(rect.insetBy(dx: barW * 0.12, dy: barW * 0.12))
-            }
-        }
-        if key.gps == .off {
-            ctx.setStrokeColor(barColor)
-            ctx.setLineWidth(max(1, barW * 0.35))
-            ctx.move(to: CGPoint(x: p, y: barBottom))
-            ctx.addLine(to: CGPoint(x: p + bars.width, y: barBottom + bars.height))
-            ctx.strokePath()
-        }
-        let labelColor = key.gps == .good ? white : barColor
-        drawLine(OverlayFormat.gpsLabel(key.gps), font: small, color: labelColor, x: p + bars.width + p * 0.4, top: footerTop)
-        drawLine(key.timestamp, font: small, color: white, x: p, top: footerTop + lineH)
         return ctx.makeImage()!
     }
 
@@ -298,8 +254,4 @@ final class OverlayRenderer: @unchecked Sendable {
         CTFontGetAscent(font) + CTFontGetDescent(font) + CTFontGetLeading(font)
     }
 
-    private static func barsSize(font: CTFont) -> CGSize {
-        let h = CTFontGetCapHeight(font)
-        return CGSize(width: h * 1.4, height: h)
-    }
 }

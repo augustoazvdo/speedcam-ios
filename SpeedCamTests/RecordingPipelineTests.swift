@@ -55,7 +55,7 @@ final class RecordingPipelineTests: XCTestCase {
         let preview = Bitmap(cgImage: try XCTUnwrap(last))
         let recorded = Bitmap(cgImage: try await frame(at: 0.5))
         let renderer = OverlayRenderer()
-        let model = box.snapshot(date: Date())
+        let model = box.snapshot()
         let plate = renderer.plateRect(for: model, uprightSize: CGSize(width: 1920, height: 1080))
         let scale = CGFloat(preview.width) / 1920
         let previewPlate = CGRect(x: plate.minX * scale, y: plate.minY * scale, width: plate.width * scale, height: plate.height * scale)
@@ -93,7 +93,7 @@ final class RecordingPipelineTests: XCTestCase {
         let topRight = CGRect(x: 1920 - 300, y: 80, width: 200, height: 120)
         XCTAssertLessThan(bitmap.luminances(in: bottomLeft)[10], 0.1, "plate stays bottom-left")
         XCTAssertGreaterThan(bitmap.luminances(in: topRight)[10], 0.1, "no plate top-right")
-        XCTAssertEqual(box.snapshot(date: Date()).corner, .topRight, "preview uses the new corner after recording")
+        XCTAssertEqual(box.snapshot().corner, .topRight, "preview uses the new corner after recording")
     }
 
     // AC-052: rotating mid-recording keeps the file's orientation locked at start.

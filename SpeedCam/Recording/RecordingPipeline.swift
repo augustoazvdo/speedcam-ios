@@ -10,16 +10,14 @@ struct PreviewImage: @unchecked Sendable {
 final class PipelineCore: @unchecked Sendable {
     private let overlay: OverlayStateBox
     private let renderer: OverlayRenderer
-    private let clock: WallClock
     private let lock = NSLock()
     private var writer: RecordingWriter?
     private var previewInFlight = false
     var previewSink: (@Sendable (PreviewImage) -> Void)?
 
-    init(overlay: OverlayStateBox, renderer: OverlayRenderer, clock: WallClock) {
+    init(overlay: OverlayStateBox, renderer: OverlayRenderer) {
         self.overlay = overlay
         self.renderer = renderer
-        self.clock = clock
     }
 
     func setWriter(_ writer: RecordingWriter?) {
@@ -34,7 +32,7 @@ final class PipelineCore: @unchecked Sendable {
     }
 
     func handle(_ frame: VideoFrame) {
-        let model = overlay.snapshot(date: clock.now())
+        let model = overlay.snapshot()
         guard let composited = renderer.render(frame.pixelBuffer, model: model) else { return }
         let writer = lock.withLock { self.writer }
         writer?.appendVideo(composited, at: frame.time)
@@ -72,12 +70,11 @@ final class RecordingPipeline: RecordingEngine {
     private var running = false
     var onPreview: ((CGImage) -> Void)?
 
-    init(frames: FrameSource, audio: AudioSampleSource?, overlay: OverlayStateBox, renderer: OverlayRenderer,
-         clock: WallClock = SystemClock()) {
+    init(frames: FrameSource, audio: AudioSampleSource?, overlay: OverlayStateBox, renderer: OverlayRenderer) {
         self.frames = frames
         self.audio = audio
         self.overlay = overlay
-        core = PipelineCore(overlay: overlay, renderer: renderer, clock: clock)
+        core = PipelineCore(overlay: overlay, renderer: renderer)
     }
 
     var isRunning: Bool { running }

@@ -243,7 +243,7 @@ final class CameraViewModelTests: XCTestCase {
         vm.toggleUnit()
         XCTAssertEqual(settings.unit, .mph)
         XCTAssertEqual(vm.reading.display, "31")
-        XCTAssertEqual(overlay.snapshot(date: Date()).reading.unit, .mph)
+        XCTAssertEqual(overlay.snapshot().reading.unit, .mph)
         XCTAssertEqual(haptics.events.last, "selection")
     }
 
@@ -253,7 +253,7 @@ final class CameraViewModelTests: XCTestCase {
         let vm = makeVM()
         await vm.scenePhaseChanged(.active)
         XCTAssertEqual(vm.reading.unit, .mph)
-        XCTAssertEqual(overlay.snapshot(date: Date()).reading.unit, .mph)
+        XCTAssertEqual(overlay.snapshot().reading.unit, .mph)
     }
 
     // AC-121
@@ -262,7 +262,7 @@ final class CameraViewModelTests: XCTestCase {
         await vm.scenePhaseChanged(.active)
         vm.selectCorner(.topRight)
         XCTAssertEqual(settings.overlayCorner, .topRight)
-        XCTAssertEqual(overlay.snapshot(date: Date()).corner, .topRight)
+        XCTAssertEqual(overlay.snapshot().corner, .topRight)
         XCTAssertEqual(haptics.events.last, "selection")
     }
 
@@ -271,7 +271,7 @@ final class CameraViewModelTests: XCTestCase {
         settings.overlayCorner = .bottomRight
         let vm = makeVM()
         await vm.scenePhaseChanged(.active)
-        XCTAssertEqual(overlay.snapshot(date: Date()).corner, .bottomRight)
+        XCTAssertEqual(overlay.snapshot().corner, .bottomRight)
         XCTAssertEqual(vm.selectedCorner, .bottomRight)
     }
 

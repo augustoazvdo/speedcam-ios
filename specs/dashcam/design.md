@@ -45,8 +45,8 @@ specs/dashcam/
 | `CoreLocationProvider` | `CLLocationManager`, When In Use, `BestForNavigation`, `activityType = .automotiveNavigation`. Started only while app is foreground. Works with `xcrun simctl location`. | implements `LocationProvider` |
 | `SimulatedLocationProvider` (DEBUG) | Deterministic scenarios: `constant50kmh`, `accelerate`, `invalid`, `noFix`, `weak`. | implements `LocationProvider` |
 | `SpeedSmoother` | Pure value logic: validity filtering, EMA smoothing, stationary clamp, staleness, unit conversion → `SpeedReading { display: String /* "50" or "--" */, unit, gps: .good/.weak/.noFix/.off }`. Injected clock. | `ingest(sample)`, `reading(at:)` |
-| `OverlayModel` | Snapshot `{ reading, unit, date, orientation, corner }` read by renderer; thread-safe (lock or actor-isolated copy). | value type |
-| `OverlayRenderer` | Draws the overlay into a `CIImage` (cached per distinct text/state) and composites onto the frame; same renderer also produces the live preview image so preview == file (AC-011). Handles orientation so overlay is upright in the output. | `render(pixelBuffer, model) -> CVPixelBuffer` |
+| `OverlayModel` | Snapshot `{ reading, orientation, corner }` read by renderer; thread-safe (lock or actor-isolated copy). | value type |
+| `OverlayRenderer` | Draws only the speedometer gauge into a `CIImage` (cached per speed/unit) and composites onto the frame; same renderer also produces the live preview image so preview == file (AC-011). Handles orientation so overlay is upright in the output. | `render(pixelBuffer, model) -> CVPixelBuffer` |
 | `RecordingWriter` | `AVAssetWriter` (.mov), video input (HEVC/H.264, `expectsMediaDataInRealTime = true`) with `AVAssetWriterInputPixelBufferAdaptor`, AAC audio input. Starts session at first video PTS. Applies orientation transform locked at start. Safe `finish()` on any stop reason. Writes to `ClipStore` temp dir. | `start(url, orientation)`, `append(video:)`, `append(audio:)`, `finish() async -> URL` |
 | `RecordingCoordinator` | State machine `idle → starting → recording → finishing → saving → idle` (+ `failed(reason)`). Routes frames to renderer→writer, handles stop reasons (user, interruption, background, storage, thermal, permission). Debounces taps. | `start()`, `stop(reason)`, `state` |
 | `ClipStore` | Temp/pending clip files in app sandbox (`Application Support/Clips`, excluded from backup), pending-save queue, recovery scan on launch. | `newClipURL()`, `pending`, `remove()` |
@@ -64,7 +64,7 @@ specs/dashcam/
 
 - **Main actor:** SwiftUI views, `CameraViewModel`, `PermissionsService` requests, `IdleTimerController`, haptics.
 - **`sessionQueue` (serial):** all `AVCaptureSession` configuration/start/stop. Never on main.
-- **`videoQueue` (serial, userInteractive):** frame callbacks → `OverlayRenderer` → `RecordingWriter.append(video:)` → preview publish. No allocation-heavy work per frame; overlay `CIImage` cached and re-rendered only when text/state changes (≤ 1×/s for the clock).
+- **`videoQueue` (serial, userInteractive):** frame callbacks → `OverlayRenderer` → `RecordingWriter.append(video:)` → preview publish. No allocation-heavy work per frame; overlay `CIImage` cached and re-rendered only when speed/unit changes.
 - **`audioQueue` (serial):** audio callbacks → `RecordingWriter.append(audio:)`.
 - **`writerQueue`:** `RecordingWriter` state (start/finish) serialized; video/audio appends check `isReadyForMoreMediaData` and drop rather than block.
 - **Location:** `CLLocationManager` delegate on main; samples handed to `SpeedSmoother` and published to `OverlayModel` (lock-protected snapshot read by `videoQueue`).
@@ -103,7 +103,7 @@ flowchart LR
 - **Real-time compositing, not post-processing:** frames are composited before encoding so the file is ready on stop and nothing is lost if the app is interrupted.
 - **Preview shows the composited buffer** (or the same overlay view rendered from the same `OverlayModel` + layout constants) so preview matches the file.
 - **Orientation:** capture buffers stay in sensor orientation; the overlay is drawn rotated into buffer space and the writer applies a track transform from the orientation locked at start, so playback is upright with the overlay upright.
-- **Gauge appearance:** the burned-in speed overlay uses the semicircular purple-to-blue gauge defined in AC-134. GPS state and local timestamp stay on the same legible semi-opaque plate; the common renderer keeps preview and saved video in sync.
+- **Gauge appearance:** the burned-in speed overlay uses only the semicircular purple-to-blue gauge defined in AC-134, with its unit, numeric speed and scale labels. GPS state remains in app status/accessibility UI, not in the image; the common renderer keeps preview and saved video in sync.
 - **Fragmented safety:** set `movieFragmentInterval` (e.g. 2 s) on the writer so crashes leave a recoverable file (AC-077).
 - **Overlay corner** is part of `OverlayModel`; the renderer maps the viewer-relative corner to buffer space using the locked orientation, so the corner is correct in the upright file. Corner is locked at record start (ASM-013).
 - **Localization:** String Catalogs, development language `en`, plus `pt-BR`. SwiftUI `Text` uses `LocalizedStringKey`; non-view strings use `String(localized:)`. Overlay date via `Date.FormatStyle` with the current locale. Info.plist usage strings live in `InfoPlist.xcstrings`; `project.yml` keeps English defaults and lists both localizations.

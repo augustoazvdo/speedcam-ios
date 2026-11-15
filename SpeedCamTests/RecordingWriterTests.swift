@@ -100,7 +100,7 @@ final class RecordingWriterTests: XCTestCase {
     func test_AC032_overlayValuesFollowSpeedOverTime() async throws {
         let writer = try makeWriter(audio: false)
         write(writer, seconds: 2, audio: false) { t in
-            OverlayModel(reading: SpeedReading(value: t < 1 ? 30 : 80, unit: .kmh, gps: .good), date: Date(),
+            OverlayModel(reading: SpeedReading(value: t < 1 ? 30 : 80, unit: .kmh, gps: .good),
                          orientation: .landscapeRight, corner: .bottomLeft)
         }
         _ = await writer.finish()

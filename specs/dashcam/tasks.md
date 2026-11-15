@@ -23,7 +23,7 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-015 Implement `SimulatedLocationProvider` (DEBUG) and `CoreLocationProvider` (When In Use, foreground only). · US-05, US-10, US-11 · AC-091, AC-092, AC-102
 
 ## Phase 2 — Overlay
-- [x] T-020 Tests: `OverlayRenderer` renders into a known pixel buffer; overlay region has non-background pixels; "--" state; mph/km/h labels; each orientation places overlay upright in the expected corner; timestamp format. · US-04, US-06 · AC-030, AC-034, AC-050
+- [x] T-020 Tests: `OverlayRenderer` renders the speed and unit into a known pixel buffer; overlay region has non-background pixels; "--" state; mph/km/h labels; each orientation places overlay upright in the expected corner. · US-04, US-06 · AC-030, AC-034, AC-050
 - [x] T-021 Implement `OverlayModel` + `OverlayRenderer` (cached CIImage, Metal CIContext). · US-04 · AC-030, AC-034, AC-050
 - [x] T-022 Tests: renderer places overlay in each of the 4 corners for portrait, landscape-left, landscape-right (12 cases, pixel-region asserts); pt-BR date format. · US-12, US-13 · AC-122, AC-133
 - [x] T-023 Implement corner + locale support in `OverlayRenderer`. · US-12, US-13 · AC-122, AC-133
@@ -56,7 +56,7 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-059 Localize all UI strings via `Localizable.xcstrings`. · US-13 · AC-130, AC-132
 
 ## Phase 6 — End-to-end on Simulator
-- [x] T-060 UI/E2E test: launch with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath … -SpeedCamSyntheticCamera YES -SpeedCamSimulatedLocation constant50kmh`; assert export file exists, extract frame at 2 s, assert overlay pixels; save PNG as test attachment. · US-10 · AC-093, AC-094, AC-030
+- [x] T-060 UI/E2E test: launch with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath … -SpeedCamSyntheticCamera YES -SpeedCamSimulatedLocation constant50kmh`; assert export file exists, extract frame at 2 s, verify only speedometer pixels; save PNG as test attachment. · US-10 · AC-093, AC-094, AC-030
 - [x] T-061 Implement `AutoRecordRunner` + export (DEBUG). · US-10 · AC-093
 - [ ] T-062 Manual check script: `xcrun simctl location "iPhone 18 Pro" start --speed=14 <waypoints>` with CoreLocation provider → overlay ≈ 50 km/h in extracted frame. · US-10 · AC-092
 - [ ] T-063 Device check (physical iPhone): 10-min recording, dropped frames ≤ 1%, overlay on every sampled frame, preview latency ≤ 1.5 s. · US-02, US-04 · AC-010, AC-033
@@ -70,7 +70,9 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 
 ## Phase 8 — Gauge visual refresh
 - [x] T-090 Test: assert AC-134 scale labels, center speed/unit, and purple/blue gauge pixels in the rendered overlay.
-- [x] T-091 Implement the semicircular gauge while retaining GPS/timestamp, corner placement, orientation and preview/video parity. Refresh the sample frame if needed.
+- [x] T-091 Implement the semicircular gauge, corner placement, orientation and preview/video parity. Refresh the sample frame if needed.
+- [x] T-092 Tests first: AC-135 verifies GPS/date changes add no image text or graphics; update the saved-frame UI test to assert no GPS label.
+- [x] T-093 Remove GPS/date from `OverlayRenderer` and its cache key/model snapshot; preserve GPS status in app status/accessibility UI. Refresh the sample frame.
 
 ## Phase 9 — Audit
-- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-134 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all
+- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-135 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all

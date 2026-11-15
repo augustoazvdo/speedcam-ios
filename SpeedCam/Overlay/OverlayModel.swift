@@ -48,25 +48,12 @@ enum CaptureOrientation: String, Sendable, CaseIterable {
 /// Snapshot read by the renderer on the video queue.
 struct OverlayModel: Sendable, Equatable {
     var reading: SpeedReading
-    var date: Date
     var orientation: CaptureOrientation
     var corner: OverlayCorner
     var locale: Locale = .current
-    var timeZone: TimeZone = .current
 }
 
 enum OverlayFormat {
-    /// ASM-016: fixed `dd/MM/yyyy HH:mm:ss` in device local time for every locale.
-    static func timestamp(_ date: Date, timeZone: TimeZone, locale: Locale) -> String {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        let c = calendar.dateComponents([.day, .month, .year, .hour, .minute, .second], from: date)
-        func n(_ value: Int?, _ digits: Int) -> String {
-            (value ?? 0).formatted(.number.grouping(.never).precision(.integerLength(digits...)).locale(locale))
-        }
-        return "\(n(c.day, 2))/\(n(c.month, 2))/\(n(c.year, 4)) \(n(c.hour, 2)):\(n(c.minute, 2)):\(n(c.second, 2))"
-    }
-
     static func gpsLabel(_ status: GPSStatus) -> String {
         switch status {
         case .good: L10n.gpsGood
@@ -114,10 +101,9 @@ final class OverlayStateBox: @unchecked Sendable {
         lock.withLock { locked?.orientation }
     }
 
-    func snapshot(date: Date) -> OverlayModel {
+    func snapshot() -> OverlayModel {
         lock.withLock {
-            OverlayModel(reading: reading, date: date,
-                         orientation: locked?.orientation ?? liveOrientation,
+            OverlayModel(reading: reading, orientation: locked?.orientation ?? liveOrientation,
                          corner: locked?.corner ?? liveCorner)
         }
     }
