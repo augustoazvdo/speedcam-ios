@@ -22,6 +22,11 @@ struct RootView: View {
         .task {
             await viewModel.launch(store: environment.store)
             await viewModel.scenePhaseChanged(.active)
+            #if DEBUG
+            if let seconds = environment.autoRecordSeconds {
+                await AutoRecordRunner(viewModel: viewModel, seconds: seconds).run()
+            }
+            #endif
         }
         .onChange(of: scenePhase) { _, phase in
             Task { await viewModel.scenePhaseChanged(phase) }

@@ -56,8 +56,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-059 Localize all UI strings via `Localizable.xcstrings`. · US-13 · AC-130, AC-132
 
 ## Phase 6 — End-to-end on Simulator
-- [ ] T-060 UI/E2E test: launch with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath … -SpeedCamSyntheticCamera YES -SpeedCamSimulatedLocation constant50kmh`; assert export file exists, extract frame at 2 s, assert overlay pixels; save PNG as test attachment. · US-10 · AC-093, AC-094, AC-030
-- [ ] T-061 Implement `AutoRecordRunner` + export (DEBUG). · US-10 · AC-093
+- [x] T-060 UI/E2E test: launch with `-SpeedCamAutoRecordSeconds 5 -SpeedCamExportPath … -SpeedCamSyntheticCamera YES -SpeedCamSimulatedLocation constant50kmh`; assert export file exists, extract frame at 2 s, assert overlay pixels; save PNG as test attachment. · US-10 · AC-093, AC-094, AC-030
+- [x] T-061 Implement `AutoRecordRunner` + export (DEBUG). · US-10 · AC-093
 - [ ] T-062 Manual check script: `xcrun simctl location "iPhone 18 Pro" start --speed=14 <waypoints>` with CoreLocation provider → overlay ≈ 50 km/h in extracted frame. · US-10 · AC-092
 - [ ] T-063 Device check (physical iPhone): 10-min recording, dropped frames ≤ 1%, overlay on every sampled frame, preview latency ≤ 1.5 s. · US-02, US-04 · AC-010, AC-033
 
