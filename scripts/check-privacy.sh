@@ -27,7 +27,7 @@ assert {'en', 'pt-BR'} <= set(p.get('CFBundleLocalizations', []))
 print('Built Info.plist: four specific usage descriptions, en + pt-BR, no Always/background keys.')
 PY
 
-rg -q 'PHAccessLevel\.addOnly' SpeedCam/Library/PhotoLibrarySaver.swift
+rg -q 'accessLevel: PHAccessLevel = \.addOnly' SpeedCam/Library/PhotoLibrarySaver.swift
 rg -q 'authorizationStatus\(for: Self\.accessLevel\)' SpeedCam/Library/PhotoLibrarySaver.swift
 rg -q 'isExcludedFromBackup = true' SpeedCam/Library/ClipStore.swift
 rg -q 'case \.background' SpeedCam/UI/CameraViewModel.swift
