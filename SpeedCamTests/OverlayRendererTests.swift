@@ -49,7 +49,7 @@ final class OverlayRendererTests: XCTestCase {
         let mph = try TestImages.recognizedText(renderer.overlayImage(for: model(50, unit: .mph),
                                                                       uprightSize: CGSize(width: 1920, height: 1080))).joined(separator: " ")
         XCTAssertTrue(mph.contains("mph"), mph)
-        XCTAssertTrue(mph.contains("150"), mph)
+        XCTAssertFalse(mph.contains("150"), mph)
         XCTAssertFalse(text.contains("GPS"), text)
         XCTAssertFalse(text.contains("13/11/2026"), text)
         XCTAssertFalse(text.contains("12:36:00"), text)
@@ -68,15 +68,19 @@ final class OverlayRendererTests: XCTestCase {
         XCTAssertFalse(text.contains("15/11/2026"), text)
     }
 
-    // AC-134: the speed display is a purple-to-blue semicircular gauge with a labeled scale.
-    func test_AC134_speedGaugeStyleAndScaleAreRendered() throws {
+    // AC-134: the purple-to-blue gauge shows speed and unit without numeric endpoint labels.
+    func test_AC134_speedGaugeHasNoNumericScaleLabels() throws {
         let m = model()
         let image = renderer.overlayImage(for: m, uprightSize: CGSize(width: 1920, height: 1080))
-        let text = try TestImages.recognizedText(image).joined(separator: " ")
-        XCTAssertTrue(text.contains("0"), text)
-        XCTAssertTrue(text.contains("240"), text)
+        let recognized = try TestImages.recognizedText(image)
+        let text = recognized.joined(separator: " ")
+        XCTAssertFalse(recognized.contains { ["0", "240"].contains($0.trimmingCharacters(in: .whitespacesAndNewlines)) }, text)
         XCTAssertTrue(text.contains("50"), text)
         XCTAssertTrue(text.contains("km/h"), text)
+
+        let mph = try TestImages.recognizedText(renderer.overlayImage(for: model(50, unit: .mph),
+                                                                      uprightSize: CGSize(width: 1920, height: 1080)))
+        XCTAssertFalse(mph.contains { ["0", "150"].contains($0.trimmingCharacters(in: .whitespacesAndNewlines)) }, mph.joined(separator: " "))
 
         let bitmap = Bitmap(cgImage: image)
         let purple = stride(from: 0, to: bitmap.bytes.count, by: 4).filter {
