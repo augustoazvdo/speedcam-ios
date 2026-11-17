@@ -191,6 +191,17 @@ final class CameraViewModelTests: XCTestCase {
         XCTAssertTrue(location.isRunning)
     }
 
+    // AC-138: location accuracy rises for recording and returns to idle after every stop.
+    func test_AC138_locationAccuracyModeTracksRecording() async {
+        let vm = makeVM()
+        await vm.scenePhaseChanged(.active)
+        XCTAssertFalse(location.isRecordingMode)
+        await record(vm)
+        XCTAssertTrue(location.isRecordingMode)
+        await vm.coordinator.stop(.user)
+        XCTAssertFalse(location.isRecordingMode)
+    }
+
     // AC-073
     func test_AC073_backgroundStopsAndSaves() async {
         let vm = makeVM()

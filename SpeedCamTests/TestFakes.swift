@@ -118,8 +118,10 @@ final class FakeLocation: LocationProvider {
     var onSample: ((LocationSample) -> Void)?
     var onAuthorizationChange: ((LocationAuthorization) -> Void)?
     private(set) var isRunning = false
+    private(set) var isRecordingMode = false
     func start() { isRunning = true }
     func stop() { isRunning = false }
+    func setRecordingMode(_ recording: Bool) { isRecordingMode = recording }
     func emit(kmh: Double, at date: Date) {
         onSample?(LocationSample(speedMps: kmh / 3.6, speedAccuracy: 0.5, horizontalAccuracy: 5, timestamp: date))
     }

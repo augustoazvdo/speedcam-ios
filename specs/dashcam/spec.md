@@ -136,6 +136,8 @@ All criteria are observable from the UI, the saved file, the Photos library, the
 - **AC-134** Given a speed is available, When the overlay is rendered, Then the speed and unit appear centered inside a semicircular gauge with a purple-to-blue arc and radial tick marks; numeric endpoint labels are omitted.
 - **AC-135** Given GPS status or the current date/time changes, When the speedometer is rendered, Then its image contains only the gauge, speed number and unit; GPS status and date/time add no text or graphics.
 - **AC-136** Given a supported rear camera exposes multiple native zoom/lens stops, When the preview is shown, Then SpeedCam shows one selectable button per available stop using the device's displayed zoom factors, and selecting one changes the live capture zoom. Stops are derived from the active AVFoundation camera capabilities; unavailable factors are never offered.
+- **AC-137** Given the camera preview is active and no recording is in progress, When camera frames arrive at 30 fps, Then compositing and preview delivery are limited to at most 15 frames per second; while recording, every available camera frame continues through the recording pipeline.
+- **AC-138** Given location updates are active in the foreground, When no recording is in progress, Then CoreLocation uses nearest-ten-meter desired accuracy; starting a recording switches to best-for-navigation accuracy and every recording stop path restores nearest-ten-meter accuracy. Location updates remain foreground-only.
 
 ### Premium feel (cross-cutting)
 

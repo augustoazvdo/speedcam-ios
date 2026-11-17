@@ -44,6 +44,29 @@ final class RecordingPipelineTests: XCTestCase {
         XCTAssertTrue(text.contains("km/h"), text)
     }
 
+    // AC-137: idle compositing and preview delivery are capped at 15 fps.
+    func test_AC137_idlePreviewIsThrottled() async throws {
+        var previews: [CGImage] = []
+        pipeline.onPreview = { previews.append($0) }
+        pipeline.startPreview()
+        try await Task.sleep(for: .seconds(1.1))
+        XCTAssertLessThanOrEqual(previews.count, 17)
+        XCTAssertGreaterThan(previews.count, 5)
+    }
+
+    // AC-137: idle preview throttling never reduces the recording frame rate.
+    func test_AC137_recordingKeepsThirtyFPS() async throws {
+        pipeline.startPreview()
+        try pipeline.beginRecording(to: url, orientation: .landscapeRight, corner: .bottomLeft, includeAudio: false)
+        try await Task.sleep(for: .seconds(1.2))
+        let result = await pipeline.finishRecording()
+        XCTAssertEqual(result, .finished(url))
+        let tracks = try await AVURLAsset(url: url).loadTracks(withMediaType: .video)
+        let track = try XCTUnwrap(tracks.first)
+        let fps = try await track.load(.nominalFrameRate)
+        XCTAssertEqual(Double(fps), 30, accuracy: 1.5)
+    }
+
     // AC-011: preview and recorded frame have the plate at the same relative position and size.
     func test_AC011_previewMatchesRecordedLayout() async throws {
         var last: CGImage?

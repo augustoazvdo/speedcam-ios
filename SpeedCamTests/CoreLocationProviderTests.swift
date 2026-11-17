@@ -8,8 +8,12 @@ final class CoreLocationProviderTests: XCTestCase {
     func test_AC102_providerIsForegroundOnlyAndStops() {
         let provider = CoreLocationProvider()
         XCTAssertFalse(provider.manager.allowsBackgroundLocationUpdates)
-        XCTAssertEqual(provider.manager.desiredAccuracy, kCLLocationAccuracyBestForNavigation)
+        XCTAssertEqual(provider.manager.desiredAccuracy, kCLLocationAccuracyNearestTenMeters)
         XCTAssertEqual(provider.manager.activityType, .automotiveNavigation)
+        provider.setRecordingMode(true)
+        XCTAssertEqual(provider.manager.desiredAccuracy, kCLLocationAccuracyBestForNavigation)
+        provider.setRecordingMode(false)
+        XCTAssertEqual(provider.manager.desiredAccuracy, kCLLocationAccuracyNearestTenMeters)
         provider.start()
         XCTAssertTrue(provider.isRunning)
         provider.stop()
