@@ -81,4 +81,8 @@ Rules: tests first (R-01). Each task lists Story · ACs. Mark `[x]` when the tes
 - [x] T-097 Implement dynamic rear-camera lens/zoom controls using AVFoundation; refresh project, verify simulator behavior where hardware permits, and document physical-device check.
 
 ## Phase 10 — Audit
-- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-136 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all
+- [x] T-098 Tests first: AC-137 idle preview throttles expensive rendering to 15 fps maximum; recording still writes at the camera's 30 fps cadence.
+- [x] T-099 Implement AC-137 early idle-frame filtering and synchronize preview-sink access with the pipeline lock.
+- [x] T-100 Tests first: AC-138 location uses nearest-ten-meter accuracy while idle, best-for-navigation while recording, and restores idle accuracy after recording stops.
+- [x] T-101 Implement AC-138 foreground location accuracy mode switching on every recording start/stop path.
+- [ ] T-080 Audit: run `scripts/check-traceability.sh` — every AC-001…AC-138 maps to ≥ 1 automated test or a documented manual/device check (AC-010, AC-033, AC-092, AC-131 prompt screenshots), every test references a valid AC, all tasks done, no open Q-xxx; list remaining ASM-xxx in the report. · all · all

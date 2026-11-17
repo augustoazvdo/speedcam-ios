@@ -170,6 +170,9 @@ final class CameraViewModel {
             guard let self else { return }
             thumbnail = saveService.lastThumbnail
         }
+        coordinator.onRecordingModeChanged = { [weak location] recording in
+            location?.setRecordingMode(recording)
+        }
     }
 
     // MARK: Derived state

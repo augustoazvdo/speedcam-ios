@@ -14,7 +14,7 @@ final class CoreLocationProvider: NSObject, LocationProvider {
 
     override init() {
         super.init()
-        manager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        manager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
         manager.activityType = .automotiveNavigation
         manager.distanceFilter = kCLDistanceFilterNone
         manager.pausesLocationUpdatesAutomatically = false
@@ -36,6 +36,10 @@ final class CoreLocationProvider: NSObject, LocationProvider {
         guard isRunning else { return }
         isRunning = false
         manager.stopUpdatingLocation()
+    }
+
+    func setRecordingMode(_ recording: Bool) {
+        manager.desiredAccuracy = recording ? kCLLocationAccuracyBestForNavigation : kCLLocationAccuracyNearestTenMeters
     }
 
     nonisolated static func sample(from location: CLLocation) -> LocationSample {

@@ -64,6 +64,8 @@ final class SimulatedLocationProvider: LocationProvider {
         }
     }
 
+    func setRecordingMode(_ recording: Bool) {}
+
     func stop() {
         task?.cancel()
         task = nil

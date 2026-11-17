@@ -36,6 +36,7 @@ protocol LocationProvider: AnyObject {
     var isRunning: Bool { get }
     func start()
     func stop()
+    func setRecordingMode(_ recording: Bool)
 }
 
 enum PhotoSaveError: Error, Equatable {

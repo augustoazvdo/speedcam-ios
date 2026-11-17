@@ -13,7 +13,8 @@ final class PipelineCore: @unchecked Sendable {
     private let lock = NSLock()
     private var writer: RecordingWriter?
     private var previewInFlight = false
-    var previewSink: (@Sendable (PreviewImage) -> Void)?
+    private var previewSink: (@Sendable (PreviewImage) -> Void)?
+    private var lastIdlePreviewTime: TimeInterval?
 
     init(overlay: OverlayStateBox, renderer: OverlayRenderer) {
         self.overlay = overlay
@@ -24,6 +25,10 @@ final class PipelineCore: @unchecked Sendable {
         lock.withLock { self.writer = writer }
     }
 
+    func setPreviewSink(_ sink: (@Sendable (PreviewImage) -> Void)?) {
+        lock.withLock { previewSink = sink }
+    }
+
     func takeWriter() -> RecordingWriter? {
         lock.withLock {
             defer { writer = nil }
@@ -32,20 +37,34 @@ final class PipelineCore: @unchecked Sendable {
     }
 
     func handle(_ frame: VideoFrame) {
-        let model = overlay.snapshot()
-        guard let composited = renderer.render(frame.pixelBuffer, model: model) else { return }
-        let writer = lock.withLock { self.writer }
-        writer?.appendVideo(composited, at: frame.time)
-
-        // Drop preview frames while the main thread is still showing the previous one (R-10).
-        let shouldPublish: Bool = lock.withLock {
-            guard !previewInFlight, previewSink != nil else { return false }
-            previewInFlight = true
-            return true
+        let work: (RecordingWriter?, (@Sendable (PreviewImage) -> Void)?)? = lock.withLock {
+            guard let writer else {
+                guard let previewSink, !previewInFlight else { return nil }
+                let now = ProcessInfo.processInfo.systemUptime
+                if let lastIdlePreviewTime, now - lastIdlePreviewTime < 1.0 / 15.0 { return nil }
+                lastIdlePreviewTime = now
+                previewInFlight = true
+                return (nil, previewSink)
+            }
+            let sink: (@Sendable (PreviewImage) -> Void)?
+            if !previewInFlight, let previewSink {
+                previewInFlight = true
+                sink = previewSink
+            } else {
+                sink = nil
+            }
+            return (writer, sink)
         }
-        guard shouldPublish else { return }
+        guard let (writer, sink) = work else { return }
+        let model = overlay.snapshot()
+        guard let composited = renderer.render(frame.pixelBuffer, model: model) else {
+            if work?.1 != nil { previewDelivered() }
+            return
+        }
+        writer?.appendVideo(composited, at: frame.time)
+        guard let sink else { return }
         if let image = renderer.previewImage(from: composited, orientation: overlay.displayOrientation, maxDimension: 1280) {
-            previewSink?(PreviewImage(image: image))
+            sink(PreviewImage(image: image))
         } else {
             previewDelivered()
         }
@@ -83,7 +102,7 @@ final class RecordingPipeline: RecordingEngine {
         guard !running else { return }
         running = true
         let core = core
-        core.previewSink = { [weak self] preview in
+        core.setPreviewSink { [weak self] preview in
             Task { @MainActor in
                 self?.onPreview?(preview.image)
                 core.previewDelivered()
@@ -98,7 +117,7 @@ final class RecordingPipeline: RecordingEngine {
         running = false
         frames.stop()
         audio?.stop()
-        core.previewSink = nil
+        core.setPreviewSink(nil)
     }
 
     func beginRecording(to url: URL, orientation: CaptureOrientation, corner: OverlayCorner, includeAudio: Bool) throws {

@@ -36,6 +36,12 @@
 - AC-136 tests were written first and initially failed to compile because `CameraZoomOption` did not exist. After implementation, option-range/label tests and the view-model selection/haptic test passed. Full simulator suite passed as reported above.
 - ASM-020 records an AVFoundation limitation: it does not expose the full native Camera preset list (including model-specific crop presets). Physical iPhone verification is still needed to compare the offered labels and actual lens changes with Camera.app, especially on iPhone 15 Pro Max. The Simulator has no camera hardware.
 
+## Resource use follow-up (AC-137, AC-138)
+
+- AC-137: while idle, PipelineCore now skips compositing unless a preview can be delivered and limits those renders to 15 fps; `previewSink` access is protected by the same lock used for the in-flight flag. During recording, every frame still reaches the writer. Tests verify the idle preview cap and a 30 fps output track.
+- AC-138: foreground idle location requests nearest-ten-meter accuracy; entering recording switches to best-for-navigation and every stop path restores idle accuracy. The location provider remains foreground-only.
+- Verification: targeted tests passed (3); full iPhone 18 Pro / iOS 27.2 run passed 154 tests with 1 existing simulator permission-prompt skip, 0 failures. Debug and Release simulator builds passed. This is code-path validation; no Instruments or physical-device power/CPU measurement was performed, so the actual battery and thermal improvement remains unmeasured.
+
 ## Assumptions and remaining work
 
 - ASM-019 is retired: numeric gauge endpoints were removed at the user's request. GPS/date text was also removed from the gauge per AC-135; GPS status remains in app status/accessibility UI.

@@ -145,6 +145,7 @@ final class RecordingCoordinator {
     private(set) var notice: Notice?
     private(set) var toast: Toast?
     var onClipSaved: (() -> Void)?
+    var onRecordingModeChanged: ((Bool) -> Void)?
 
     @ObservationIgnored private let engine: RecordingEngine
     @ObservationIgnored private let saver: ClipSaving
@@ -217,6 +218,7 @@ final class RecordingCoordinator {
             return
         }
         state = .recording(since: clock.now())
+        onRecordingModeChanged?(true)
         notice = nil
         idleTimer.isIdleTimerDisabled = true
         haptics.recordStarted()
@@ -226,6 +228,7 @@ final class RecordingCoordinator {
     func stop(_ reason: StopReason) async {
         guard isRecording else { return }
         state = .finishing
+        onRecordingModeChanged?(false)
         storagePoll?.cancel()
         storagePoll = nil
         idleTimer.isIdleTimerDisabled = false
